@@ -6,8 +6,10 @@ from Model.SingleMeasurement import SweepTypes
 
 class Fieldsweep(Controller):
     def __init__(self, deviceType, paths):
+        super().__init__()
         if deviceType == DeviceTypes.Keithley:
             self._dataModel = Keithley(paths)
+
 
     def plotSQI(self, fieldAxisSweepType, dVdI=False, deviceID=0, overrideDecorator=None):
         if dVdI:

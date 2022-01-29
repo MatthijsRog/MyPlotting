@@ -3,10 +3,8 @@ import warnings
 
 
 class Model:
-    _data = []
-    
-    def __init__(self, paths):
-        pass
+    def __init__(self):
+        self._data = []
 
     def columnTitles(self, path):
         with open(path) as f:

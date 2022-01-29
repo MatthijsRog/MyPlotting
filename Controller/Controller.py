@@ -7,18 +7,15 @@ class DeviceTypes(Enum):
     Keithley = auto()
 
 class Controller:
-    _dataModel = None
-    _view = None
-
     def __init__(self):
-        pass
+        self._dataModel = None
+        self._view = None
 
     def startPlot(self, useTex = False):
         self._view = View(useTex=useTex)
 
     def finishPlot(self, savepath=None):
         self._view.plotAll(savepath=savepath)
-
 
     def addOverlayFunction(self, func, params, NPoints=500, plotID=-1, label=None):
         dataCapsule = SmoothFunction2D(lambda x: func(x, *params), NPoints, label=label)

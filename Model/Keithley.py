@@ -7,9 +7,8 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 class Keithley(VectorMagnetModel, TransportMeasurement):
-    _data = []
-
     def __init__(self, paths):
+        super().__init__()
         if isinstance(paths, list):
             for path in paths:
                 if isinstance(path, str):
