@@ -40,7 +40,7 @@ class Fieldsweep(Controller):
         return plotID
 
     def plotIC(self, fieldAxisSweepType, fromdVdI=False, vThreshold = None, dVdIThreshold = None, deviceID=0,
-               selection=None, sweepRange=None, overrideDecorator=None, positiveCurrents=True):
+               plotID = None, selection=None, sweepRange=None, overrideDecorator=None, positiveCurrents=True):
         if fromdVdI:
             xIcDataCapsule = self._dataModel.ICFromIdVdI(fieldAxisSweepType, dVdIThreshold, deviceID = deviceID, selection=selection, sweepRange=sweepRange, positiveCurrent=positiveCurrents)
         else:
@@ -62,10 +62,14 @@ class Fieldsweep(Controller):
 
         if self._view == None:
             self.startPlot()
-        plotID = self._view.subplotFromDataCapsules([xIcDataCapsule], plotType, decorator)
+
+        if plotID is None:
+            plotID = self._view.subplotFromDataCapsules([xIcDataCapsule], plotType, decorator)
+        else:
+            self._view.addDatacapsuleToSubplot(xIcDataCapsule, plotID)
         return plotID
 
-    def plotIVs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, selection=None, sweepRange=None):
+    def plotIVs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, selection=None, sweepRange=None):
         plotIDs = []
 
         decorator = Decorators.Current_Voltage.value
@@ -78,9 +82,53 @@ class Fieldsweep(Controller):
             decorator.overrideDecorator(overrideDecorator)
 
         dataCapsules2D = self._dataModel.getIVs(fieldAxisSweepType, deviceID=deviceID, selection=selection, sweepRange=sweepRange)
-        plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator)
+
+        if plotID is None:
+            plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator)
+        else:
+            for dataCapsule in dataCapsules2D:
+                self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
 
         return plotID
+
+    def plotConstantBias(self, fieldAxisSweepType, ybias, deviceID=0, overrideDecorator=None, plotID = None, selection=None, sweepRange=None):
+        plotIDs = []
+
+        dataCapsules = []
+
+        if not isinstance(ybias, list):
+            ybias = [ybias]
+
+        for yb in ybias:
+            dataCapsules.append(
+                self._dataModel.getConstantBias(fieldAxisSweepType, yb, deviceID=deviceID, selection=selection,
+                                                sweepRange=sweepRange))
+
+        if fieldAxisSweepType == SweepTypes.B_X:
+            decorator = Decorators.ConstantBias_MagneticField_x.value
+        elif fieldAxisSweepType == SweepTypes.B_Y:
+            decorator = Decorators.ConstantBias_MagneticField_y.value
+        elif fieldAxisSweepType == SweepTypes.B_Z:
+            decorator = Decorators.ConstantBias_MagneticField_z.value
+        elif fieldAxisSweepType == SweepTypes.T_VTI or fieldAxisSweepType == SweepTypes.T_SAMPLE:
+            decorator = Decorators.ConstantBias_T.value
+
+        plotType = PlotTypes.Scatter2D
+
+        if self._view == None:
+            self.startPlot()
+
+        if overrideDecorator is not None:
+            decorator.overrideDecorator(overrideDecorator)
+
+        if plotID is None:
+            plotID = self._view.subplotFromDataCapsules(dataCapsules, plotType, decorator)
+        else:
+            for capsule in dataCapsules:
+                self._view.addDatacapsuleToSubplot(capsule, plotID)
+        return plotID
+
+
 
     def removeSeriesResistance(self, deviceID=0, Npoints=4):
         self._dataModel.removeSeriesResistance(deviceID=deviceID, Npoints=Npoints)

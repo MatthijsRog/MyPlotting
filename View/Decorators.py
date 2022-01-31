@@ -81,3 +81,13 @@ class Decorators(Enum):
                                  ylabel=SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
     Current_Voltage = Decorator(xlabel = SILabel(PlotUnits.Current, PlotScales.Micro),
                                 ylabel = SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    ConstantBias_T = Decorator(xlabel=SILabel(PlotUnits.Temperature, PlotScales.Unit),
+                     ylabel=SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
+    ConstantBias_MagneticField = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
+                                 ylabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    ConstantBias_MagneticField_x = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_x, PlotScales.Milli),
+                                   ylabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    ConstantBias_MagneticField_y = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_y, PlotScales.Milli),
+                                   ylabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    ConstantBias_MagneticField_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
+                                   ylabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))

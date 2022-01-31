@@ -31,6 +31,40 @@ class TransportMeasurement(ABC):
         else:
             raise TypeError("Unknown datacapsule type.")
 
+    def getConstantBias(self, sweepType, yb, deviceID=0, selection=None, sweepRange=None):
+        allIVs = self.sweepIV(sweepType, deviceID=deviceID)
+        allIVs = self._selectSweepValuesDataCapsule(allIVs, sweepRange=sweepRange, selection=selection)
+
+        if isinstance(allIVs, RegularData3D):
+            return self._getConstantBiasRegular(allIVs, yb)
+        elif isinstance(allIVs, IrregularData3D):
+            return self._getConstantBiasIrregular(allIVs, yb)
+
+    def _getConstantBiasRegular(self, allIVs, yb):
+        xs = allIVs.xx[0,:]
+        ys = allIVs.yy[:,0]
+        index = np.argmin(np.abs(ys - yb))
+        zs = allIVs.zz[index,:]
+
+        curve = Data2D(xs, zs)
+        curve.labelfloat = yb
+
+        return curve
+
+    def _getConstantBiasIrregular(self, allIVs, yb):
+        xs = allIVs.x
+        zs = np.zeros_like(xs)
+        for i, x in enumerate(xs):
+            y = allIVs.ylist[i]
+            index = np.argmin(np.abs(y - yb))
+            zs[i] = allIVs.zlist[i][index]
+
+        curve = Data2D(xs, zs)
+        curve.labelfloat = yb
+
+        return curve
+
+
     def ICFromIV(self, sweepType, vThreshold, deviceID=0, positiveCurrent = True, sweepRange = None, selection = None):
         dataCapsule = self.sweepIV(sweepType, deviceID=deviceID)
         dataCapsule = self._selectSweepValuesDataCapsule(dataCapsule, sweepRange=sweepRange, selection=selection)
@@ -58,7 +92,11 @@ class TransportMeasurement(ABC):
             I = II[:,i][mask[:,i]]
             z = zz[:,i][mask[:,i]]
 
-            Ic[i] = I[np.argmax(z > zThreshold)]# I[np.argmin(np.abs(z - zThreshold))]
+            if negyonly:
+                Ic[i] = (I[::-1])[np.argmax(z[::-1] > zThreshold)]
+            else:
+                Ic[i] = I[np.argmax(z > zThreshold)]  # I[np.argmin(np.abs(z - zThreshold))]
+
 
         return Data2D(x, Ic)
 
