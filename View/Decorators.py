@@ -44,6 +44,7 @@ class Decorator(object):
         if override.fitcolor is not None:
             self.fitcolor = override.fitcolor
 
+
 class Decorators(Enum):
     SQI_IV = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
                        ylabel = SILabel(PlotUnits.Current, PlotScales.Micro),

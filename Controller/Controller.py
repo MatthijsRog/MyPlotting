@@ -45,3 +45,5 @@ class Controller:
             label = overrideLabel
 
         self.addOverlayFunction(func, param, NPoints, plotID, label=label)
+
+        return param, pcov

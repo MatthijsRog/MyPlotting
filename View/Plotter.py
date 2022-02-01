@@ -9,6 +9,7 @@ from View.SILabel import SILabel, PlotUnits, PlotScales
 
 class Plotter(ABC):
     roundDecimals = 2
+    _fitcolors = ['red', 'green']
 
     def __init__(self, decorator):
         self.decorator = decorator
@@ -16,7 +17,15 @@ class Plotter(ABC):
         self.linewidth = decorator.linewidth if decorator.linewidth is not None else 2
         self.linestyle = decorator.linestyle if decorator.linestyle is not None else '-'
         self.fitcolor = self.decorator.fitcolor if self.decorator.fitcolor is not None else 'red'
+        self.fitcolorindex = 0
         pass
+
+    def _fitcolor(self):
+        if self.fitcolorindex == len(self._fitcolors):
+            self.fitcolorindex = 0
+        color = self._fitcolors[self.fitcolorindex]
+        self.fitcolorindex += 1
+        return color
 
     @abstractmethod
     def plotDataCapsule(self, ax, dataCapsule):
@@ -100,7 +109,7 @@ class Scatter2D(Plotter):
             x0, x1 = ax.get_xlim()
             xax = np.linspace(x0, x1, dataCapsule.NPoints)
 
-            ax.plot(xax, dataCapsule.func(xax*self.decorator.xlabel.scale)/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle='--', label=self.labelText(label), color=self.fitcolor)
+            ax.plot(xax, dataCapsule.func(xax*self.decorator.xlabel.scale)/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle='--', label=self.labelText(label), color=self._fitcolor())
         else:
             raise TypeError("Un-supported data capsule type for Scatter2D.")
 
