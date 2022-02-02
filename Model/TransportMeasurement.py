@@ -21,6 +21,10 @@ class TransportMeasurement(ABC):
     def removeSeriesResistance(self, deviceID=0, Npoints=4):
         pass
 
+    @abstractmethod
+    def sweepResistance(self, sweepType, deviceID=0):
+        pass
+
     def ICFromIdVdI(self, sweepType, dVdIThreshold, deviceID=0, positiveCurrent = True, sweepRange = None, selection = None):
         dataCapsule = self.sweepIdVdI(sweepType, deviceID=deviceID)
         dataCapsule = self._selectSweepValuesDataCapsule(dataCapsule, sweepRange=sweepRange, selection = selection)
@@ -30,6 +34,11 @@ class TransportMeasurement(ABC):
             return self._ICFromIrregularData(dVdIThreshold, dataCapsule, posyonly=positiveCurrent, negyonly=not positiveCurrent)
         else:
             raise TypeError("Unknown datacapsule type.")
+
+    def getResistance(self, sweepType, deviceID=0, selection=None, sweepRange=None):
+        resistances = self.sweepResistance(sweepType, deviceID=deviceID)
+        resistances = self._selectSweepValuesDataCapsule(resistances, sweepRange=sweepRange, selection=selection)
+        return resistances
 
     def getConstantBias(self, sweepType, yb, deviceID=0, selection=None, sweepRange=None):
         allIVs = self.sweepIV(sweepType, deviceID=deviceID)
@@ -175,6 +184,10 @@ class TransportMeasurement(ABC):
             x = dataCapsule.x
             mask = self._getMaskForX(x, sweepRange=sweepRange, selection=selection)
             return IrregularData3D(dataCapsule.x[mask], list(compress(dataCapsule.ylist,mask)), list(compress(dataCapsule.zlist,mask)))
+        elif isinstance(dataCapsule, Data2D):
+            x = dataCapsule.x
+            mask = self._getMaskForX(x, sweepRange=sweepRange, selection=selection)
+            return Data2D(dataCapsule.x[mask], dataCapsule.y[mask])
         else:
             TypeError("This type of datacapsule does not support masking.")
 

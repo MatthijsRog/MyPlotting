@@ -1,7 +1,7 @@
 from Model.Model import VectorMagnetModel
 from Model.TransportMeasurement import TransportMeasurement
 from Model.SingleMeasurement import SingleMeasurement
-from DataCapsule.DataCapsules import RegularData3D, IrregularData3D
+from DataCapsule.DataCapsules import RegularData3D, IrregularData3D, Data2D
 from typing import NamedTuple
 import numpy as np
 from scipy.optimize import curve_fit
@@ -56,6 +56,17 @@ class Keithley(VectorMagnetModel, TransportMeasurement):
                 break
 
         return isRegular
+
+    def sweepResistance(self, sweepType, deviceID=0):
+        """Returns (x,R) data for some environmental x."""
+        x = np.zeros(len(self._data))
+        y = np.zeros_like(x)
+
+        for i in range(len(x)):
+            x[i] = self._data[i].environmental(sweepType)
+            y[i] = self._data[i].resistance(deviceID=deviceID)
+
+        return Data2D(x,y)
 
     def sweepIV(self, sweepType, deviceID=0):
         """Returns (x,I,V) data for some environmental variable x."""
@@ -151,7 +162,12 @@ class KeithleyData(SingleMeasurement):
         if isinstance(IVPerDevice, list):
             self.IVPerDevice = IVPerDevice
         else:
-            raise TypeError("IVPerDevice member of KeithleyData must be a dictionary of device names pointing to IV curves.")
+            raise TypeError("IVPerDevice member of KeithleyData must be a list of device indices pointing to IV curves.")
+
+    def resistance(self, deviceID=0):
+        iv = self.IVPerDevice[deviceID]
+        params, _ = curve_fit(lambda x, a, b: a*x+b, iv.current, iv.voltage, p0=[iv.voltage[0]/iv.current[0], 0.0])
+        return params[0]
 
 class KeithleyIV(NamedTuple):
     current: np.ndarray

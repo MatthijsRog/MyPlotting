@@ -24,6 +24,7 @@ class PlotUnits(UnitSymbol, Enum):
     CurrentPerTemperature         = UnitSymbol(unit=r"$dI/dT$",       textSymbol=r"A/K",  SISymbol=r"\current\per\kelvin")
     StandardDeviation_MagneticField  = UnitSymbol(unit=r"$\sigma$",       textSymbol=r"T", SISymbol=r"\tesla")
     InductancePerArea             = UnitSymbol(unit=r"dL/dA", textSymbol=r"H/m^2", SISymbol=r"\henry\per\meter\squared")
+    Resistance                    = UnitSymbol(unit=r"R", textSymbol=r"$\Omega$", SISymbol=r"\ohm")
 
 class PlotScales(SizeSymbol, Enum):
     Giga = SizeSymbol(scale = 1e9, textSymbol = r"G", SISymbol = r"\giga")

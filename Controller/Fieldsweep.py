@@ -128,7 +128,31 @@ class Fieldsweep(Controller):
                 self._view.addDatacapsuleToSubplot(capsule, plotID)
         return plotID
 
+    def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, selection=None, sweepRange=None):
+        dataCapsule = self._dataModel.getResistance(fieldAxisSweepType, selection=selection, sweepRange=sweepRange)
 
+        if fieldAxisSweepType == SweepTypes.B_X:
+            decorator = Decorators.Resistance_MagneticField_x.value
+        elif fieldAxisSweepType == SweepTypes.B_Y:
+            decorator = Decorators.Resistance_MagneticField_y.value
+        elif fieldAxisSweepType == SweepTypes.B_Z:
+            decorator = Decorators.Resistance_MagneticField_z.value
+        elif fieldAxisSweepType == SweepTypes.T_VTI or fieldAxisSweepType == SweepTypes.T_SAMPLE:
+            decorator = Decorators.Resistance_T.value
+
+        plotType = PlotTypes.Scatter2D
+
+        if self._view is None:
+            self.startPlot()
+
+        if overrideDecorator is not None:
+            decorator.overrideDecorator(overrideDecorator)
+
+        if plotID is None:
+            plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+        else:
+            self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
+        return plotID
 
     def removeSeriesResistance(self, deviceID=0, Npoints=4):
         self._dataModel.removeSeriesResistance(deviceID=deviceID, Npoints=Npoints)

@@ -7,12 +7,7 @@ from glob import glob
 
 import numpy as np
 
-sqiDecorator = Decorator(zlim=[-10,10], cmap='bwr')
-icDecorator = Decorator(connectDots=False, fitcolor='red')
-
-fieldsweep = Fieldsweep(DeviceTypes.Keithley, r"Data\ATEC3-6\Fieldsweeps\X-axis-fieldsweep-highres-gaussian-70uA-IV.txt")
+fieldsweep = Fieldsweep(DeviceTypes.Keithley, r"Data\ATEC3-6\20220131_ATEC 3-6_RT_Cooldown.txt")
 fieldsweep.startPlot(useTex = False)
-fieldsweep.removeSeriesResistance()
-fieldsweep.plotConstantBias(SweepTypes.B_X, 60e-6)
-print("Time to plot!")
-fieldsweep.finishPlot(r"P:\STMSOT\ATEC3-6\Images\IcTSmallTransition.png")
+fieldsweep.plotResistance(SweepTypes.T_SAMPLE)
+fieldsweep.finishPlot()
