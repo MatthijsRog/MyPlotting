@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum, auto
 from View.View import View
 from DataCapsule.DataCapsules import SmoothFunction2D, Label
@@ -13,6 +14,9 @@ class Controller:
 
     def startPlot(self, useTex = False):
         self._view = View(useTex=useTex)
+
+    def subscribeToView(self, controller: Controller):
+        self._view = controller._view
 
     def finishPlot(self, savepath=None):
         self._view.plotAll(savepath=savepath)

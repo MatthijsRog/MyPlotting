@@ -7,7 +7,12 @@ from glob import glob
 
 import numpy as np
 
-fieldsweep = Fieldsweep(DeviceTypes.Keithley, r"Data\ATEC3-6\20220131_ATEC 3-6_RT_Cooldown.txt")
-fieldsweep.startPlot(useTex = False)
-fieldsweep.plotResistance(SweepTypes.T_SAMPLE)
-fieldsweep.finishPlot()
+cooldown_before = Fieldsweep(DeviceTypes.Keithley, r"Data\ATEC3-6\RT-15K-ATEC3-6")
+#cooldown_after  = Fieldsweep(DeviceTypes.Keithley, r"Data\ATEC3-6\20220131_ATEC 3-6_RT_Cooldown.txt")
+
+cooldown_before.startPlot(useTex = False)
+cooldown_before.plotResistance(SweepTypes.T_SAMPLE)
+cooldown_before.plotResistance(SweepTypes.T_SAMPLE, plotID=0, insetID=0)
+#cooldown_after.subscribeToView(cooldown_before)
+#cooldown_after.plotResistance(SweepTypes.T_SAMPLE, plotID=0)
+cooldown_before.finishPlot()

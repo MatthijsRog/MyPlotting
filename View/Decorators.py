@@ -4,7 +4,8 @@ from enum import Enum
 
 class Decorator(object):
     def __init__(self, xlabel=None, ylabel=None, zlabel=None, xlim=None, ylim=None, zlim=None, markersize=None,
-                 linestyle=None, linewidth=None, cmap=None, connectDots=None, fitcolor=None):
+                 linestyle=None, linewidth=None, cmap=None, connectDots=None, fitcolor=None, insetPosition=None,
+                 insetWidth=None, insetHeight=None, insetBorderPad=None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.zlabel = zlabel
@@ -17,6 +18,10 @@ class Decorator(object):
         self.cmap = cmap
         self.connectDots = connectDots
         self.fitcolor = fitcolor
+        self.insetPositon = insetPosition
+        self.insetWidth = insetWidth
+        self.insetHeight = insetHeight
+        self.insetBorderPad = insetBorderPad
 
     def overrideDecorator(self, override):
         if override.xlabel is not None:
@@ -43,6 +48,14 @@ class Decorator(object):
             self.connectDots = override.connectDots
         if override.fitcolor is not None:
             self.fitcolor = override.fitcolor
+        if override.insetPositon is not None:
+            self.insetPosition = override.insetPosition
+        if override.insetWidth is not None:
+            self.insetWidth = override.insetWidth
+        if override.insetHeight is not None:
+            self.insetHeight = override.insetHeight
+        if override.insetBorderPad is not None:
+            self.insetBorderPad = override.insetBorderPad
 
 
 class Decorators(Enum):

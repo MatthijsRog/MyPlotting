@@ -4,6 +4,7 @@ from typing import NamedTuple
 import matplotlib.pyplot as plt
 from matplotlib import rc, rcParams, rcParamsDefault
 from matplotlib import gridspec
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 class PlotTypes(Enum):
     ColorPlot = auto()
@@ -16,6 +17,7 @@ class View():
 
     def __init__(self, useTex=False):
         self._subplots = []
+        self._insets   = []
 
         if useTex:
             rc('font', **{'family': 'serif', 'serif': ['Times']})
@@ -26,22 +28,23 @@ class View():
 
     def subplotFromDataCapsules(self, dataCapsules, plotType, decorator):
         # First force dataCapsules to be a list:
-        if not isinstance(dataCapsules, list):
-            assert isinstance(dataCapsules, object)
-            dataCapsules = [dataCapsules]
-
+        dataCapsules = self._enforceList(dataCapsules)
         # Then add to a Subplot instance based on the plotType.
-        if plotType == PlotTypes.ColorPlot:
-            subplot = Subplot(dataCapsules=dataCapsules, plotter=ColorPlotter(decorator))
-            self._subplots.append(subplot)
-            plotID = len(self._subplots) - 1
-        elif plotType == PlotTypes.Scatter2D:
-            subplot = Subplot(dataCapsules=dataCapsules, plotter=Scatter2D(decorator))
-            self._subplots.append(subplot)
-            plotID = len(self._subplots) - 1
-        else:
-            raise TypeError("Unsupported plot type.")
+        subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator)
+
+        # Then add to the right lists:
+        self._subplots.append(subplot)
+        self._insets.append([])
+        plotID = len(self._subplots) - 1
         return plotID
+
+    def insetFromDataCapsules(self, dataCapsules, plotType, decorator, plotID):
+        # First force dataCapsules to be a list:
+        dataCapsules = self._enforceList(dataCapsules)
+        # Then add to a Subplot instance based on the plotType.
+        subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator)
+        self._insets[plotID].append(subplot)
+
 
     def plotAll(self, savepath=None):
         amountOfPlots = len(self._subplots)
@@ -63,6 +66,27 @@ class View():
                 plotter.plotDataCapsule(ax, dataCapsule)
             plotter.decorate(ax)
 
+            # Goto smaller font:
+            rcParams.update({'font.size': 6})
+
+            insets = self._insets[i]
+            if insets: # If not an empty list
+                for inset in insets:
+                    plotter = inset.plotter
+
+                    loc = plotter.decorator.insetPositon if plotter.decorator.insetPositon is not None else 'lower right'
+                    width = plotter.decorator.insetWidth if plotter.decorator.insetWidth is not None else 2.5
+                    height = plotter.decorator.insetHeight if plotter.decorator.insetHeight is not None else 1
+                    borderpad = plotter.decorator.insetBorderPad if plotter.decorator.insetBorderPad is not None else 5
+
+                    inset_ax = inset_axes(ax, width=width, height=height, loc=loc, borderpad=borderpad)
+                    for dataCapsule in inset.dataCapsules:
+                        plotter.plotDataCapsule(inset_ax, dataCapsule)
+                    plotter.decorate(inset_ax)
+
+            # Return to standard font size:
+            rcParams.update({'font.size': 10})
+
         plt.tight_layout()
 
         if savepath is not None:
@@ -82,6 +106,20 @@ class View():
 
     def isTeX(self):
         return plt.rcParams['text.usetex']
+
+    def _enforceList(self, data):
+        if not isinstance(data, list):
+            assert isinstance(data, object)
+            data = [data]
+        return data
+
+    def _subplotFromPlotType(self, dataCapsules, plotType, decorator):
+        if plotType == PlotTypes.ColorPlot:
+            return Subplot(dataCapsules=dataCapsules, plotter=ColorPlotter(decorator))
+        elif plotType == PlotTypes.Scatter2D:
+            return Subplot(dataCapsules=dataCapsules, plotter=Scatter2D(decorator))
+        else:
+            raise TypeError("Unsupported plot type.")
 
 class Subplot(NamedTuple):
     dataCapsules: list

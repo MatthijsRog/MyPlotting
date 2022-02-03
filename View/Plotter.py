@@ -38,8 +38,8 @@ class Plotter(ABC):
             if self.decorator.zlabel != None:
                 ax.set_title(self.decorator.zlabel.generateLaTeXLabel())
         else:
-            ax.set_xlabel(self.decorator.xlabel.generateTextLabel())
-            ax.set_ylabel(self.decorator.ylabel.generateTextLabel())
+            ax.set_xlabel(self.decorator.xlabel.generateTextLabel(), labelpad=0)
+            ax.set_ylabel(self.decorator.ylabel.generateTextLabel(), labelpad=-2)
             if self.decorator.zlabel != None:
                 ax.set_title(self.decorator.zlabel.generateTextLabel())
 

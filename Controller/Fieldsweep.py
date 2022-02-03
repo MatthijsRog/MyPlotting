@@ -128,7 +128,7 @@ class Fieldsweep(Controller):
                 self._view.addDatacapsuleToSubplot(capsule, plotID)
         return plotID
 
-    def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, selection=None, sweepRange=None):
+    def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None, selection=None, sweepRange=None):
         dataCapsule = self._dataModel.getResistance(fieldAxisSweepType, selection=selection, sweepRange=sweepRange)
 
         if fieldAxisSweepType == SweepTypes.B_X:
@@ -148,10 +148,15 @@ class Fieldsweep(Controller):
         if overrideDecorator is not None:
             decorator.overrideDecorator(overrideDecorator)
 
-        if plotID is None:
-            plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+        if insetID is None:
+            # Make a top-level plot:
+            if plotID is None:
+                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+            else:
+                self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
         else:
-            self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
+            # Make an inset in a plot:
+            self._view.insetFromDataCapsules(dataCapsule, plotType, decorator, plotID)
         return plotID
 
     def removeSeriesResistance(self, deviceID=0, Npoints=4):
