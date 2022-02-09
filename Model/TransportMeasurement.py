@@ -197,7 +197,12 @@ class TransportMeasurement(ABC):
             x1 = sweepRange[1]
             mask = (x >= x0) & (x <= x1)
         elif selection is not None:
-            mask = selection
+            if len(selection) == len(x):
+                mask = selection
+            else:
+                mask = np.zeros_like(x, dtype=bool)
+                for i in selection:
+                    mask[i] = True
         else:
             mask = x > -np.inf
         return mask

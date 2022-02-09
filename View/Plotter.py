@@ -38,8 +38,11 @@ class Plotter(ABC):
             if self.decorator.zlabel != None:
                 ax.set_title(self.decorator.zlabel.generateLaTeXLabel())
         else:
-            ax.set_xlabel(self.decorator.xlabel.generateTextLabel(), labelpad=0)
-            ax.set_ylabel(self.decorator.ylabel.generateTextLabel(), labelpad=-2)
+            labelpadx = self.decorator.labelPad[0] if self.decorator.labelPad is not None else 0
+            labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else -2
+
+            ax.set_xlabel(self.decorator.xlabel.generateTextLabel(), labelpad=labelpadx)
+            ax.set_ylabel(self.decorator.ylabel.generateTextLabel(), labelpad=labelpady)
             if self.decorator.zlabel != None:
                 ax.set_title(self.decorator.zlabel.generateTextLabel())
 
@@ -103,7 +106,6 @@ class Scatter2D(Plotter):
         if isinstance(dataCapsule, Data2D):
             ax.scatter(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, s=self.markersize, label=self.labelText(label))
             if (self.decorator.connectDots is None) or (self.decorator.connectDots == True):
-                print("Foo!")
                 ax.plot(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle=self.linestyle)
         elif isinstance(dataCapsule, SmoothFunction2D):
             x0, x1 = ax.get_xlim()
@@ -115,5 +117,6 @@ class Scatter2D(Plotter):
 
     def decorate(self, ax):
         super().decorate(ax)
-        ax.legend(bbox_to_anchor=[1.05,1.05])
+        if self.decorator.legendOn is None or self.decorator.legendOn == True:
+            ax.legend(bbox_to_anchor=[1.05,1.05])
         ax.grid()

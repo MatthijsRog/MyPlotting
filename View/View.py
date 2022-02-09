@@ -38,12 +38,18 @@ class View():
         plotID = len(self._subplots) - 1
         return plotID
 
-    def insetFromDataCapsules(self, dataCapsules, plotType, decorator, plotID):
+    def insetFromDataCapsules(self, dataCapsules, plotType, decorator, plotID, insetID):
         # First force dataCapsules to be a list:
         dataCapsules = self._enforceList(dataCapsules)
-        # Then add to a Subplot instance based on the plotType.
-        subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator)
-        self._insets[plotID].append(subplot)
+
+        # If inset already exists, add there:
+        if insetID < len(self._insets[plotID]):
+            for dataCapsule in dataCapsules:
+                self.addDatacapsuleToInset(dataCapsule, plotID, insetID)
+        else:
+            # Then add to a Subplot instance based on the plotType.
+            subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator)
+            self._insets[plotID].append(subplot)
 
 
     def plotAll(self, savepath=None):
@@ -97,6 +103,9 @@ class View():
 
     def addDatacapsuleToSubplot(self, dataCapsule, subplotID):
         self._subplots[subplotID].dataCapsules.append(dataCapsule)
+
+    def addDatacapsuleToInset(self, dataCapsule, subplotID, insetID):
+        self._insets[subplotID][insetID].dataCapsules.append(dataCapsule)
 
     def dataCapsule(self, subplotID, dataCapsuleID):
         return self._subplots[subplotID].dataCapsules[dataCapsuleID]

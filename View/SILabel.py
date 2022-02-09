@@ -13,7 +13,8 @@ class SizeSymbol(NamedTuple):
 
 class PlotUnits(UnitSymbol, Enum):
     Current                       = UnitSymbol(unit=r"Current",       textSymbol=r"A",    SISymbol=r"\ampere")
-    Voltage                       = UnitSymbol(unit=r"Voltage",       textSymbol=r"A",    SISymbol=r"\volt")
+    BiasCurrent                   = UnitSymbol(unit=r"$I_B$",         textSymbol=r"A",    SISymbol=r"\ampere")
+    Voltage                       = UnitSymbol(unit=r"Voltage",       textSymbol=r"V",    SISymbol=r"\volt")
     InPlaneAppliedMagneticField   = UnitSymbol(unit=r"$\mu_0 H$",     textSymbol=r"T",    SISymbol=r"\tesla")
     InPlaneAppliedMagneticField_x = UnitSymbol(unit=r"$\mu_0 H_x$", textSymbol=r"T", SISymbol=r"\tesla")
     InPlaneAppliedMagneticField_y = UnitSymbol(unit=r"$\mu_0 H_y$", textSymbol=r"T", SISymbol=r"\tesla")
