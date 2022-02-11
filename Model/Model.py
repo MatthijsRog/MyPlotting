@@ -1,10 +1,24 @@
 import numpy as np
 import warnings
-
-
-class Model:
-    def __init__(self):
+from abc import ABC, abstractmethod
+class Model(ABC):
+    def __init__(self, paths):
         self._data = []
+        if isinstance(paths, list):
+            for path in paths:
+                if isinstance(path, str):
+                    self.loadDataFromFile(path)
+                else:
+                    raise TypeError("Paths contains a non-string element.")
+        elif isinstance(paths, str):
+            self.loadDataFromFile(paths)
+        else:
+            raise TypeError("Paths is not a list of strings, or a string.")
+
+    @abstractmethod
+    def loadDataFromFile(self, path):
+        # Loads data from a single file
+        pass
 
     def columnTitles(self, path):
         with open(path) as f:

@@ -1,5 +1,6 @@
 from Controller.Controller import Controller, DeviceTypes
-from Model.Keithley import  Keithley
+from Model.Keithley import Keithley
+from Model.ZILockin import ZILockin
 from View.View import View, PlotTypes
 from View.Decorators import Decorators
 from Model.SingleMeasurement import SweepTypes
@@ -12,6 +13,44 @@ class Fieldsweep(Controller):
         super().__init__()
         if deviceType == DeviceTypes.Keithley:
             self._dataModel = Keithley(paths)
+        elif deviceType == DeviceTypes.ZILockin:
+            self._dataModel = ZILockin(paths)
+
+    def plotLockinMagnitude(self, fieldAxisSweepType, overrideDecorator=None, plotID = None,
+                            insetID = None, overrideLabel=None):
+        plotType = PlotTypes.Scatter2D
+        if fieldAxisSweepType == SweepTypes.B_X:
+            baseDecorator = Decorators.Lockin_Magnitude_MagneticField_x.value
+        if fieldAxisSweepType == SweepTypes.B_Y:
+            baseDecorator = Decorators.Lockin_Magnitude_MagneticField_y.value
+        if fieldAxisSweepType == SweepTypes.B_Z:
+            baseDecorator = Decorators.Lockin_Magnitude_MagneticField_z.value
+
+        dataCapsule = self._dataModel.sweepR(fieldAxisSweepType)
+
+        if overrideLabel is not None:
+            dataCapsule.label = overrideLabel
+
+        if self._view == None:
+            self.startPlot()
+
+        if overrideDecorator is None:
+            decorator = baseDecorator
+        else:
+            overrideDecorator.overrideDecorator(baseDecorator)
+            decorator = overrideDecorator
+
+        if insetID is None:
+            # Make a top-level plot:
+            if plotID is None:
+                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+            else:
+                self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
+        else:
+            # Make an inset in a plot:
+            self._view.insetFromDataCapsules(dataCapsule, plotType, decorator, plotID, insetID)
+
+        return plotID
 
     def plotSQI(self, fieldAxisSweepType, dVdI=False, deviceID=0, overrideDecorator=None):
         if dVdI:
@@ -77,7 +116,8 @@ class Fieldsweep(Controller):
             self._view.addDatacapsuleToSubplot(xIcDataCapsule, plotID)
         return plotID
 
-    def plotIVs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None, selection=None, sweepRange=None):
+    def plotIVs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
+                selection=None, sweepRange=None):
         plotIDs = []
 
         baseDecorator = Decorators.Current_Voltage.value
@@ -92,7 +132,8 @@ class Fieldsweep(Controller):
             overrideDecorator.overrideDecorator(baseDecorator)
             decorator = overrideDecorator
 
-        dataCapsules2D = self._dataModel.getIVs(fieldAxisSweepType, deviceID=deviceID, selection=selection, sweepRange=sweepRange)
+        dataCapsules2D = self._dataModel.getIVs(fieldAxisSweepType, deviceID=deviceID, selection=selection,
+                                                sweepRange=sweepRange)
 
         if insetID is None:
             # Make a top-level plot:
@@ -119,7 +160,7 @@ class Fieldsweep(Controller):
             dataCapsules.append(
                 self._dataModel.getConstantBias(fieldAxisSweepType, yb, deviceID=deviceID, selection=selection,
                                                 sweepRange=sweepRange))
-            dataCapsules[-1].label = Label(labelfloat=yb, labelfloatSILabel=SILabel(PlotUnits.Current, PlotScales.Micro))
+            dataCapsules[-1].label = Label(labelfloat=yb, labelfloatSILabel=SILabel(PlotUnits.BiasCurrent, PlotScales.Micro))
 
         if fieldAxisSweepType == SweepTypes.B_X:
             baseDecorator = Decorators.ConstantBias_MagneticField_x.value
@@ -177,7 +218,6 @@ class Fieldsweep(Controller):
             overrideDecorator.overrideDecorator(baseDecorator)
             decorator = overrideDecorator
 
-        print(decorator)
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:

@@ -8,17 +8,7 @@ from scipy.optimize import curve_fit
 
 class Keithley(VectorMagnetModel, TransportMeasurement):
     def __init__(self, paths):
-        super().__init__()
-        if isinstance(paths, list):
-            for path in paths:
-                if isinstance(path, str):
-                    self.loadDataFromFile(path)
-                else:
-                    raise TypeError("Paths contains a non-string element.")
-        elif isinstance(paths, str):
-            self.loadDataFromFile(paths)
-        else:
-            raise TypeError("Paths is not a list of strings, or a string.")
+        super().__init__(paths)
 
     def loadDataFromFile(self, path):
         VTITemperature, sampleTemperature, Bx, By, Bz = self.vectorMagnetTemperatureAndField(path)

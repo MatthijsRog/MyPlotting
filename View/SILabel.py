@@ -15,6 +15,7 @@ class PlotUnits(UnitSymbol, Enum):
     Current                       = UnitSymbol(unit=r"Current",       textSymbol=r"A",    SISymbol=r"\ampere")
     BiasCurrent                   = UnitSymbol(unit=r"$I_B$",         textSymbol=r"A",    SISymbol=r"\ampere")
     Voltage                       = UnitSymbol(unit=r"Voltage",       textSymbol=r"V",    SISymbol=r"\volt")
+    BiasVoltage                   = UnitSymbol(unit=r"$V_B$",         textSymbol=r"V",    SISymbol=r"\volt")
     InPlaneAppliedMagneticField   = UnitSymbol(unit=r"$\mu_0 H$",     textSymbol=r"T",    SISymbol=r"\tesla")
     InPlaneAppliedMagneticField_x = UnitSymbol(unit=r"$\mu_0 H_x$", textSymbol=r"T", SISymbol=r"\tesla")
     InPlaneAppliedMagneticField_y = UnitSymbol(unit=r"$\mu_0 H_y$", textSymbol=r"T", SISymbol=r"\tesla")
@@ -26,6 +27,7 @@ class PlotUnits(UnitSymbol, Enum):
     StandardDeviation_MagneticField  = UnitSymbol(unit=r"$\sigma$",       textSymbol=r"T", SISymbol=r"\tesla")
     InductancePerArea             = UnitSymbol(unit=r"dL/dA", textSymbol=r"H/m^2", SISymbol=r"\henry\per\meter\squared")
     Resistance                    = UnitSymbol(unit=r"R", textSymbol=r"$\Omega$", SISymbol=r"\ohm")
+    LockinMagnitude               = UnitSymbol(unit=r"R", textSymbol=r"Vrms", SISymbol=r"\volt\text{rms}")
 
 class PlotScales(SizeSymbol, Enum):
     Giga = SizeSymbol(scale = 1e9, textSymbol = r"G", SISymbol = r"\giga")

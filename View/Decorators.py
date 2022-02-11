@@ -4,8 +4,8 @@ from enum import Enum
 
 class Decorator(object):
     def __init__(self, xlabel=None, ylabel=None, zlabel=None, xlim=None, ylim=None, zlim=None, markersize=None,
-                 linestyle=None, linewidth=None, cmap=None, connectDots=None, fitcolor=None, insetPosition=None,
-                 insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, labelPad = None):
+                 linestyle=None, linewidth=None, linecolors=None, fitcolors=None, cmap=None, connectDots=None,
+                 fitcolor=None, insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, labelPad = None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.zlabel = zlabel
@@ -15,9 +15,10 @@ class Decorator(object):
         self.markersize = markersize
         self.linestyle = linestyle
         self.linewidth = linewidth
+        self.linecolors = linecolors
         self.cmap = cmap
         self.connectDots = connectDots
-        self.fitcolor = fitcolor
+        self.fitcolors = fitcolors
         self.insetPositon = insetPosition
         self.insetWidth = insetWidth
         self.insetHeight = insetHeight
@@ -48,8 +49,10 @@ class Decorator(object):
             self.cmap = override.cmap
         if override.connectDots is not None:
             self.connectDots = override.connectDots
-        if override.fitcolor is not None:
-            self.fitcolor = override.fitcolor
+        if override.linecolors is not None:
+            self.linecolors = override.linecolors
+        if override.fitcolors is not None:
+            self.fitcolors = override.fitcolors
         if override.insetPositon is not None:
             self.insetPosition = override.insetPosition
         if override.insetWidth is not None:
@@ -62,7 +65,6 @@ class Decorator(object):
             self.legendOn = override.legendOn
         if override.labelPad is not None:
             self.labelPad = override.labelPad
-
 
 class Decorators(Enum):
     SQI_IV = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
@@ -121,3 +123,9 @@ class Decorators(Enum):
                                              ylabel=SILabel(PlotUnits.Resistance, PlotScales.Unit))
     Resistance_MagneticField_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
                                              ylabel=SILabel(PlotUnits.Resistance, PlotScales.Unit))
+    Lockin_Magnitude_MagneticField_x = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_x, PlotScales.Milli),
+                                                 ylabel=SILabel(PlotUnits.LockinMagnitude, PlotScales.Micro))
+    Lockin_Magnitude_MagneticField_y = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_y, PlotScales.Milli),
+                                                 ylabel=SILabel(PlotUnits.LockinMagnitude, PlotScales.Micro))
+    Lockin_Magnitude_MagneticField_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
+                                                 ylabel=SILabel(PlotUnits.LockinMagnitude, PlotScales.Micro))

@@ -9,21 +9,31 @@ from View.SILabel import SILabel, PlotUnits, PlotScales
 
 class Plotter(ABC):
     roundDecimals = 2
-    _fitcolors = ['red', 'green']
+    _defaultFitcolors = ['red', 'green']
+    _defaultLinecolors = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
 
     def __init__(self, decorator):
         self.decorator = decorator
         self.markersize = decorator.markersize if decorator.markersize is not None else 5
         self.linewidth = decorator.linewidth if decorator.linewidth is not None else 2
         self.linestyle = decorator.linestyle if decorator.linestyle is not None else '-'
-        self.fitcolor = self.decorator.fitcolor if self.decorator.fitcolor is not None else 'red'
+        self.linecolors = self.decorator.linecolors if self.decorator.linecolors is not None else self._defaultLinecolors
+        self.fitcolors = self.decorator.fitcolors if self.decorator.fitcolors is not None else self._defaultFitcolors
+        self.linecolorindex = 0
         self.fitcolorindex = 0
         pass
 
+    def _linecolor(self):
+        if self.linecolorindex == len(self.linecolors):
+            self.linecolorindex = 0
+        color = self.linecolors[self.linecolorindex]
+        self.linecolorindex += 1
+        return color
+
     def _fitcolor(self):
-        if self.fitcolorindex == len(self._fitcolors):
+        if self.fitcolorindex == len(self.fitcolors):
             self.fitcolorindex = 0
-        color = self._fitcolors[self.fitcolorindex]
+        color = self.fitcolors[self.fitcolorindex]
         self.fitcolorindex += 1
         return color
 
@@ -104,9 +114,11 @@ class Scatter2D(Plotter):
         label = dataCapsule.label
 
         if isinstance(dataCapsule, Data2D):
-            ax.scatter(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, s=self.markersize, label=self.labelText(label))
+            color = self._linecolor()
+            ax.scatter(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale,
+                       s=self.markersize, color=color, label=self.labelText(label))
             if (self.decorator.connectDots is None) or (self.decorator.connectDots == True):
-                ax.plot(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle=self.linestyle)
+                ax.plot(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle=self.linestyle, color=color)
         elif isinstance(dataCapsule, SmoothFunction2D):
             x0, x1 = ax.get_xlim()
             xax = np.linspace(x0, x1, dataCapsule.NPoints)
@@ -116,7 +128,8 @@ class Scatter2D(Plotter):
             raise TypeError("Un-supported data capsule type for Scatter2D.")
 
     def decorate(self, ax):
+        print("Foo!")
         super().decorate(ax)
         if self.decorator.legendOn is None or self.decorator.legendOn == True:
-            ax.legend(bbox_to_anchor=[1.05,1.05])
+            ax.legend(loc='upper left', bbox_to_anchor=[1.05,1], )
         ax.grid()
