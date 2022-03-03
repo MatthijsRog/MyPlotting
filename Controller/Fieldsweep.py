@@ -1,6 +1,7 @@
 from Controller.Controller import Controller, DeviceTypes
 from Model.Keithley import Keithley
 from Model.ZILockin import ZILockin
+from Model.Synktek import Synktek
 from View.View import View, PlotTypes
 from View.Decorators import Decorators
 from Model.SingleMeasurement import SweepTypes
@@ -9,12 +10,14 @@ from DataCapsule.DataCapsules import Label
 import numpy as np
 
 class Fieldsweep(Controller):
-    def __init__(self, deviceType, paths):
+    def __init__(self, deviceType, paths, invertVoltage=False):
         super().__init__()
         if deviceType == DeviceTypes.Keithley:
             self._dataModel = Keithley(paths)
         elif deviceType == DeviceTypes.ZILockin:
             self._dataModel = ZILockin(paths)
+        elif deviceType == DeviceTypes.Synktek:
+            self._dataModel = Synktek(paths, invertVoltage=invertVoltage)
 
     def plotLockinMagnitude(self, fieldAxisSweepType, overrideDecorator=None, plotID = None,
                             insetID = None, overrideLabel=None):

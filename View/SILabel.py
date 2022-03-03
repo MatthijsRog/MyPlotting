@@ -17,11 +17,11 @@ class PlotUnits(UnitSymbol, Enum):
     Voltage                       = UnitSymbol(unit=r"Voltage",       textSymbol=r"V",    SISymbol=r"\volt")
     BiasVoltage                   = UnitSymbol(unit=r"$V_B$",         textSymbol=r"V",    SISymbol=r"\volt")
     InPlaneAppliedMagneticField   = UnitSymbol(unit=r"$\mu_0 H$",     textSymbol=r"T",    SISymbol=r"\tesla")
-    InPlaneAppliedMagneticField_x = UnitSymbol(unit=r"$\mu_0 H_x$", textSymbol=r"T", SISymbol=r"\tesla")
-    InPlaneAppliedMagneticField_y = UnitSymbol(unit=r"$\mu_0 H_y$", textSymbol=r"T", SISymbol=r"\tesla")
-    InPlaneAppliedMagneticField_z = UnitSymbol(unit=r"$\mu_0 H_z$", textSymbol=r"T", SISymbol=r"\tesla")
+    InPlaneAppliedMagneticField_x = UnitSymbol(unit=r"$\text{\textmu}_0 \text{H}_x$", textSymbol=r"T", SISymbol=r"\tesla")
+    InPlaneAppliedMagneticField_y = UnitSymbol(unit=r"$\text{\textmu}_0 \text{H}_y$", textSymbol=r"T", SISymbol=r"\tesla")
+    InPlaneAppliedMagneticField_z = UnitSymbol(unit=r"$\text{\textmu}_0 \text{H}_z$", textSymbol=r"T", SISymbol=r"\tesla")
     DifferentialResistance        = UnitSymbol(unit=r"$dV/dI$",       textSymbol=r"Ohms", SISymbol=r"\ohm")
-    CriticalCurrent               = UnitSymbol(unit=r"$I_C$",         textSymbol=r"A",    SISymbol=r"\ampere")
+    CriticalCurrent               = UnitSymbol(unit=r"$\text{I}_\text{c}$",         textSymbol=r"A",    SISymbol=r"\ampere")
     Temperature                   = UnitSymbol(unit=r"Temperature",   textSymbol=r"K",    SISymbol=r"\kelvin")
     CurrentPerTemperature         = UnitSymbol(unit=r"$dI/dT$",       textSymbol=r"A/K",  SISymbol=r"\current\per\kelvin")
     StandardDeviation_MagneticField  = UnitSymbol(unit=r"$\sigma$",       textSymbol=r"T", SISymbol=r"\tesla")
@@ -64,7 +64,10 @@ class SILabel():
         return self._unit.unit
 
     def generateTextUnit(self):
-        return self._unit.unit
+        unit = self._unit.unit
+        sanitized = unit.replace(r"\text", r"")
+        print(sanitized)
+        return sanitized
 
     def generateLaTeXLabel(self):
         if self._label == None:

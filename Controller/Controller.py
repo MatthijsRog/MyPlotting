@@ -6,6 +6,7 @@ from scipy.optimize import curve_fit
 
 class DeviceTypes(Enum):
     Keithley = auto()
+    Synktek = auto()
     ZILockin = auto()
 
 class Controller:

@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 from abc import ABC, abstractmethod
+
 class Model(ABC):
     def __init__(self, paths):
         self._data = []
@@ -97,4 +98,31 @@ class VectorMagnetModel(Model):
 
         return xPerDevice, yPerDevice
 
+    def load3DDataForVectorMagnet(self, path, xIdentifier, yIdentifier, zIdentifier):
+        columnTitles = self.columnTitles(path)
+
+        # The Keithley data sets come with I, V data that we want for every device:
+        xIndices = []
+        yIndices = []
+        zIndices = []
+
+        for i, title in enumerate(columnTitles):
+            if title[:len(xIdentifier) + 1] == xIdentifier + "(":
+                xIndices.append(i)
+            if title[:len(yIdentifier) + 1] == yIdentifier + "(":
+                yIndices.append(i)
+            if title[:len(zIdentifier) + 1] == zIdentifier + "(":
+                zIndices.append(i)
+
+        xPerDevice = []
+        yPerDevice = []
+        zPerDevice = []
+
+        for xIndex, yIndex, zIndex in zip(xIndices, yIndices, zIndices):
+            x, y, z = self.genColumnsFromTxtForVectorMagnet(path, [xIndex, yIndex, zIndex])
+            xPerDevice.append(x)
+            yPerDevice.append(y)
+            zPerDevice.append(z)
+
+        return xPerDevice, yPerDevice, zPerDevice
 

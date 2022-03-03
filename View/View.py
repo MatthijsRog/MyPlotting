@@ -2,6 +2,7 @@ from View.Plotter import Plotter, ColorPlotter, Scatter2D
 from enum import Enum, auto
 from typing import NamedTuple
 import matplotlib.pyplot as plt
+import matplotlib
 from matplotlib import rc, rcParams, rcParamsDefault
 from matplotlib import gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -22,7 +23,11 @@ class View():
         if useTex:
             rc('font', **{'family': 'serif', 'serif': ['Times']})
             rc('text', usetex=True)
-            rc('text.latex', preamble=r"\usepackage{siunitx}")
+            rc('text.latex', preamble=r"""\usepackage{siunitx}
+                                          \usepackage{textgreek}""")
+
+            params = {'axes.labelsize': 'large', 'axes.titlesize': 'x-large'}
+            matplotlib.rcParams.update(params)
         else:
             rcParams.update(rcParamsDefault)
 

@@ -102,6 +102,7 @@ class TransportMeasurement(ABC):
             z = zz[:,i][mask[:,i]]
 
             if negyonly:
+                print("Only neg I!")
                 Ic[i] = (I[::-1])[np.argmax(z[::-1] > zThreshold)]
             else:
                 Ic[i] = I[np.argmax(z > zThreshold)]  # I[np.argmin(np.abs(z - zThreshold))]

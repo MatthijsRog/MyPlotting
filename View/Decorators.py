@@ -3,12 +3,15 @@ from View.SILabel import PlotUnits, PlotScales, SILabel
 from enum import Enum
 
 class Decorator(object):
-    def __init__(self, xlabel=None, ylabel=None, zlabel=None, xlim=None, ylim=None, zlim=None, markersize=None,
+    def __init__(self, xlabel=None, ylabel=None, zlabel=None, title=None, xlim=None, ylim=None, zlim=None, markersize=None,
                  linestyle=None, linewidth=None, linecolors=None, fitcolors=None, cmap=None, connectDots=None,
-                 fitcolor=None, insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, labelPad = None):
+                 insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, gridOn=None,
+                 minorticksOn = None,
+                 labelPad = None, labelPadZ = None, contourFillLevels = None, contourLevels = None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.zlabel = zlabel
+        self.title = title
         self.xlim = xlim # 2-element list
         self.ylim = ylim # 2-element list
         self.zlim = zlim # 2-element list
@@ -24,7 +27,12 @@ class Decorator(object):
         self.insetHeight = insetHeight
         self.insetBorderPad = insetBorderPad
         self.legendOn = legendOn
+        self.gridOn = gridOn
+        self.minorticksOn = minorticksOn
         self.labelPad = labelPad
+        self.labelPadZ = labelPadZ
+        self.contourFillLevels = contourFillLevels
+        self.contourLevels = contourLevels
 
     def overrideDecorator(self, override):
         if override.xlabel is not None:
@@ -33,6 +41,8 @@ class Decorator(object):
             self.ylabel = override.ylabel
         if override.zlabel is not None:
             self.zlabel = override.zlabel
+        if override.title is not None:
+            self.title = override.title
         if override.xlim is not None:
             self.xlim = override.xlim
         if override.ylim is not None:
@@ -63,34 +73,44 @@ class Decorator(object):
             self.insetBorderPad = override.insetBorderPad
         if override.legendOn is not None:
             self.legendOn = override.legendOn
+        if override.gridOn is not None:
+            self.gridOn = override.gridOn
+        if override.minorticksOn is not None:
+            self.minorticksOn = override.minorticksOn
         if override.labelPad is not None:
             self.labelPad = override.labelPad
+        if override.labelPadZ is not None:
+            self.labelPadZ = override.labelPadZ
+        if override.contourFillLevels is not None:
+            self.contourFillLevels = override.contourFillLevels
+        if override.contourLevels is not None:
+            self.contourLevels = override.contourLevels
 
 class Decorators(Enum):
     SQI_IV = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
                        ylabel = SILabel(PlotUnits.Current, PlotScales.Micro),
-                       zlabel = SILabel(PlotUnits.Voltage, PlotScales.Micro))
+                       zlabel= SILabel(PlotUnits.Voltage, PlotScales.Micro))
     SQI_dVdI = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
                          ylabel = SILabel(PlotUnits.Current, PlotScales.Micro),
-                         zlabel = SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+                         zlabel= SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
     SQI_IV_x = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_x, PlotScales.Milli),
-                       ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                       zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+                         ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                         zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
     SQI_dVdI_x = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_x, PlotScales.Milli),
-                         ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                         zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+                           ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                           zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
     SQI_IV_y = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_y, PlotScales.Milli),
-                       ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                       zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+                         ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                         zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
     SQI_dVdI_y = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_y, PlotScales.Milli),
-                         ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                         zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+                           ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                           zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
     SQI_IV_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
-                       ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                       zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
-    SQI_dVdI_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
                          ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
-                         zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+                         zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    SQI_dVdI_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
+                           ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                           zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
     Ic_T = Decorator(xlabel = SILabel(PlotUnits.Temperature, PlotScales.Unit),
                      ylabel = SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
     Ic_MagneticField = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
