@@ -102,7 +102,6 @@ class TransportMeasurement(ABC):
             z = zz[:,i][mask[:,i]]
 
             if negyonly:
-                print("Only neg I!")
                 Ic[i] = (I[::-1])[np.argmax(z[::-1] > zThreshold)]
             else:
                 Ic[i] = I[np.argmax(z > zThreshold)]  # I[np.argmin(np.abs(z - zThreshold))]
@@ -127,8 +126,11 @@ class TransportMeasurement(ABC):
                 mask = I > -np.inf
 
             z = z[mask]
+            if negyonly:
+                Ic[i] = ((I[mask])[::-1])[np.argmax(z[::-1] > zThreshold)]
+            else:
+                Ic[i] = I[mask][np.argmax(z > zThreshold)]
 
-            Ic[i] = I[mask][np.argmax(z > zThreshold)]
 
         return Data2D(x, Ic)
 
@@ -175,6 +177,16 @@ class TransportMeasurement(ABC):
                 dataCapsules2D.append(Data2D(dataCapsule.ylist[i], dataCapsule.zlist[i], label=label))
 
         return dataCapsules2D
+
+    def getIdVdIs(self, sweepType, deviceID=0, sweepRange=None, selection=None):
+        """Gets IV curves from the underlying dataset. """
+        dataCapsule = self.sweepIdVdI(sweepType, deviceID=deviceID)
+        if isinstance(dataCapsule, RegularData3D):
+            return self._getIVRegular(dataCapsule, sweepType, sweepRange = sweepRange, selection = selection)
+        elif isinstance(dataCapsule, IrregularData3D):
+            return self._getIVIrregular(dataCapsule, sweepType, sweepRange = sweepRange, selection = selection)
+        else:
+            raise TypeError("Unknown datacapsule type.")
 
     def _selectSweepValuesDataCapsule(self, dataCapsule, sweepRange=None, selection=None):
         if isinstance(dataCapsule, RegularData3D):

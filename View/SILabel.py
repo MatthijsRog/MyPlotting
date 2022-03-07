@@ -66,7 +66,6 @@ class SILabel():
     def generateTextUnit(self):
         unit = self._unit.unit
         sanitized = unit.replace(r"\text", r"")
-        print(sanitized)
         return sanitized
 
     def generateLaTeXLabel(self):

@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import rc, rcParams, rcParamsDefault
 from matplotlib import gridspec
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes, InsetPosition
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 class PlotTypes(Enum):
     ColorPlot = auto()
@@ -15,10 +16,12 @@ class View():
     preferredAmountOfColumns = 2
     preferredFigureSize = (7, 4)
     preferredDpi = 240
+    preferredBaxpad = .5
 
     def __init__(self, useTex=False):
         self._subplots = []
         self._insets   = []
+        self._axes = []
 
         if useTex:
             rc('font', **{'family': 'serif', 'serif': ['Times']})
@@ -26,7 +29,8 @@ class View():
             rc('text.latex', preamble=r"""\usepackage{siunitx}
                                           \usepackage{textgreek}""")
 
-            params = {'axes.labelsize': 'large', 'axes.titlesize': 'x-large'}
+            params = {'axes.labelsize': 'xx-large', 'axes.titlesize': 'x-large', 'xtick.labelsize': 'x-large',
+                      'ytick.labelsize': 'x-large', 'legend.fontsize': 'xx-large'}
             matplotlib.rcParams.update(params)
         else:
             rcParams.update(rcParamsDefault)
@@ -68,14 +72,35 @@ class View():
             self.plotGrid = gridspec.GridSpec(rows, self.preferredAmountOfColumns)
         self.plotFigure = plt.figure(figsize=self.preferredFigureSize, dpi=self.preferredDpi)
 
-        for i in range(amountOfPlots):
-            ax = self.plotFigure.add_subplot(self.plotGrid[i])
-            plotter = self._subplots[i].plotter
+        for i, subplot in enumerate(self._subplots):
+            print("Plotting subplot", i)
+            plotter = subplot.plotter
+
+            if len(self._axes) > 0:
+                ax = self.plotFigure.add_subplot(self.plotGrid[i], sharex=self._axes[-1])
+            else:
+                ax = self.plotFigure.add_subplot(self.plotGrid[i])
+            self._axes.append(ax)
 
             # Plot all data:
-            for dataCapsule in self._subplots[i].dataCapsules:
+            for dataCapsule in subplot.dataCapsules:
                 plotter.plotDataCapsule(ax, dataCapsule)
-            plotter.decorate(ax)
+
+            baxpad = plotter.decorator.baxpad if plotter.decorator.baxpad is not None else self.preferredBaxpad
+            if plotter.decorator.brokenYLim is not None:
+                divider = make_axes_locatable(ax)
+                bax = divider.new_vertical(size="100%", pad=baxpad)
+                self.plotFigure.add_axes(bax)
+            if plotter.decorator.brokenYLim is not None:
+                print("Plotting into bax.")
+                plotter.plotDataCapsule(bax, dataCapsule)
+
+            if plotter.decorator.brokenYLim is None:
+                plotter.decorate(ax)
+            else:
+                print("Decorating bax.")
+
+                plotter.decorate(ax, bax=bax, baxpad=baxpad)
 
             # Goto smaller font:
             rcParams.update({'font.size': 6})
@@ -90,7 +115,13 @@ class View():
                     height = plotter.decorator.insetHeight if plotter.decorator.insetHeight is not None else 1
                     borderpad = plotter.decorator.insetBorderPad if plotter.decorator.insetBorderPad is not None else 5
 
-                    inset_ax = inset_axes(ax, width=width, height=height, loc=loc, borderpad=borderpad)
+                    if isinstance(loc, str) or isinstance(loc, int):
+                        inset_ax = inset_axes(ax, width=width, height=height, loc=loc, borderpad=borderpad)
+                    else:
+                        inset_ax = plt.axes([0, 0, 1, 1])
+                        insetPosition = InsetPosition(ax, loc)
+                        inset_ax.set_axes_locator(insetPosition)
+
                     for dataCapsule in inset.dataCapsules:
                         plotter.plotDataCapsule(inset_ax, dataCapsule)
                     plotter.decorate(inset_ax)
@@ -98,10 +129,8 @@ class View():
             # Return to standard font size:
             rcParams.update({'font.size': 10})
 
-        plt.tight_layout()
-
         if savepath is not None:
-            plt.savefig(savepath)
+            plt.savefig(savepath, bbox_inches='tight')
 
         plt.show()
         rcParams.update(rcParamsDefault)

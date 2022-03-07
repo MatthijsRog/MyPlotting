@@ -151,6 +151,38 @@ class Fieldsweep(Controller):
 
         return plotID
 
+    def plotIdVdIs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
+                selection=None, sweepRange=None):
+        plotIDs = []
+
+        baseDecorator = Decorators.Current_DifferentialResistance.value
+        plotType = PlotTypes.Scatter2D
+
+        if self._view == None:
+            self.startPlot()
+
+        if overrideDecorator is None:
+            decorator = baseDecorator
+        else:
+            overrideDecorator.overrideDecorator(baseDecorator)
+            decorator = overrideDecorator
+
+        dataCapsules2D = self._dataModel.getIdVdIs(fieldAxisSweepType, deviceID=deviceID, selection=selection,
+                                                sweepRange=sweepRange)
+
+        if insetID is None:
+            # Make a top-level plot:
+            if plotID is None:
+                plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator)
+            else:
+                for dataCapsule in dataCapsules2D:
+                    self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
+        else:
+            # Make an inset in a plot:
+            self._view.insetFromDataCapsules(dataCapsules2D, plotType, decorator, plotID, insetID)
+
+        return plotID
+
     def plotConstantBias(self, fieldAxisSweepType, ybias, deviceID=0, overrideDecorator=None, plotID = None, insetID = None, selection=None, sweepRange=None):
         plotIDs = []
 

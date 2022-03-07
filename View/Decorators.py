@@ -6,8 +6,9 @@ class Decorator(object):
     def __init__(self, xlabel=None, ylabel=None, zlabel=None, title=None, xlim=None, ylim=None, zlim=None, markersize=None,
                  linestyle=None, linewidth=None, linecolors=None, fitcolors=None, cmap=None, connectDots=None,
                  insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, gridOn=None,
-                 minorticksOn = None,
-                 labelPad = None, labelPadZ = None, contourFillLevels = None, contourLevels = None):
+                 minorticksOn = None, brokenYLim = None, baxpad=None,
+                 labelPad = None, labelPadZ = None, contourFillLevels = None, contourLevels = None,
+                 semilogy = None, tickspacing = None, majorTickSize = None, minorTickSize = None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.zlabel = zlabel
@@ -29,10 +30,16 @@ class Decorator(object):
         self.legendOn = legendOn
         self.gridOn = gridOn
         self.minorticksOn = minorticksOn
-        self.labelPad = labelPad
+        self.brokenYLim = brokenYLim
+        self.baxpad = baxpad
+        self.labelPad = labelPad # 2-element list
         self.labelPadZ = labelPadZ
         self.contourFillLevels = contourFillLevels
         self.contourLevels = contourLevels
+        self.semilogy = semilogy
+        self.tickspacing = tickspacing # 2-element list
+        self.majorTickSize = majorTickSize  # 2-element list
+        self.minorTickSize = minorTickSize  # 2-element list
 
     def overrideDecorator(self, override):
         if override.xlabel is not None:
@@ -85,6 +92,18 @@ class Decorator(object):
             self.contourFillLevels = override.contourFillLevels
         if override.contourLevels is not None:
             self.contourLevels = override.contourLevels
+        if override.brokenYLim is not None:
+            self.brokenYLim = override.brokenYLim
+        if override.baxpad is not None:
+            self.baxpad = override.baxpad
+        if override.semilogy is not None:
+            self.semilogy = semilogy
+        if override.tickspacing is not None:
+            self.tickspacing = tickspacing
+        if override.majorTickSize is not None:
+            self.majorTickSize = majorTickSize
+        if override.minorTickSize is not None:
+            self.minorTickSize = minorTickSize
 
 class Decorators(Enum):
     SQI_IV = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),
@@ -123,6 +142,8 @@ class Decorators(Enum):
                                  ylabel=SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
     Current_Voltage = Decorator(xlabel = SILabel(PlotUnits.Current, PlotScales.Micro),
                                 ylabel = SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    Current_DifferentialResistance = Decorator(xlabel = SILabel(PlotUnits.Current, PlotScales.Micro),
+                                               ylabel = SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
     ConstantBias_T = Decorator(xlabel=SILabel(PlotUnits.Temperature, PlotScales.Unit),
                      ylabel=SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
     ConstantBias_MagneticField = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),

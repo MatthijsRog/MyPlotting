@@ -127,8 +127,12 @@ class SynktekData(SingleMeasurement):
 
     def resistance(self, deviceID=0):
         iv = self.IVPerDevice[deviceID]
-        params, _ = curve_fit(lambda x, a, b: a*x+b, iv.current, iv.voltage, p0=[iv.voltage[0]/iv.current[0], 0.0])
-        return params[0]
+
+        if len(iv.current) > 1:
+            params, _ = curve_fit(lambda x, a, b: a*x+b, iv.current, iv.voltage, p0=[iv.voltage[0]/iv.current[0], 0.0])
+            return params[0]
+        else:
+            return iv.dVdI[0]
 
 class SynktekIV(NamedTuple):
     current: np.ndarray
