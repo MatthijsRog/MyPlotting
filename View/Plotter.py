@@ -40,18 +40,14 @@ class Plotter(ABC):
         self.fitcolorindex += 1
         return color
 
-    def addColorbar(self, im, ax, ticks=None, toRemove=False):
-        divider = make_axes_locatable(ax)
-        cax = divider.new_horizontal(size="4%", pad=.5)
-        plt.gcf().add_axes(cax)
-        if not toRemove:
-            self.colorbar = plt.colorbar(im, cax=cax, ticks=ticks)
+    def addColorbar(self, im, cax, ticks=None, toRemove=False):
+        self.colorbar = plt.colorbar(im, cax=cax, ticks=ticks)
 
     @abstractmethod
-    def plotDataCapsule(self, ax, dataCapsule):
+    def plotDataCapsule(self, ax, dataCapsule, cax=None, bax=None):
         pass
 
-    def decorate(self, ax, secondaryAxis=False):
+    def decorate(self, ax, cax=None, bax=None, secondaryAxis=False):
         print("Bar!")
         labelpadx = self.decorator.labelPad[0] if self.decorator.labelPad is not None else 5
         labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else 3.5
@@ -82,11 +78,10 @@ class Plotter(ABC):
         if self.decorator.brokenYLim is not None:
             print("Snoot")
             if not secondaryAxis:
-                print(self.decorator.brokenYLim[0])
-                ax.set_ylim(self.decorator.brokenYLim[0])
+                ax.set_ylim(self.decorator.brokenYLim[1])
             else:
                 print(self.decorator.brokenYLim[1])
-                ax.set_ylim(self.decorator.brokenYLim[1])
+                ax.set_ylim(self.decorator.brokenYLim[0])
         if self.decorator.minorticksOn is None or self.decorator.minorticksOn == True:
             print("Turning on minor ticks.")
             ax.minorticks_on()
@@ -129,24 +124,27 @@ class ColorPlotter(Plotter):
         self.contourLevels = self.decorator.contourLevels if self.decorator.contourLevels is not None else 6
         self.contourLinewidths = .4 # Magic number
 
-    def plotDataCapsule(self, ax, dataCapsule):
+    def plotDataCapsule(self, ax, dataCapsule, cax=None, bax=None):
         if isinstance(dataCapsule, RegularData3D):
-            self.plotRegularData3D(ax, dataCapsule)
+            self.plotRegularData3D(ax, dataCapsule, cax, bax)
         elif isinstance(dataCapsule, IrregularData3D):
-            self.plotIrregularData3D(ax, dataCapsule)
+            self.plotIrregularData3D(ax, dataCapsule, cax, bax)
         else:
             raise TypeError("Un-supported data capsule type for SQIPlotter.")
 
-    def plotRegularData3D(self, ax, regularData3D):
+    def plotRegularData3D(self, ax, regularData3D, cax, bax):
         vmin, vmax = self.getZrange(regularData3D)
         im = ax.pcolormesh(regularData3D.xx / self.decorator.xlabel.scale,
                            regularData3D.yy / self.decorator.ylabel.scale,
                            regularData3D.zz / self.decorator.title.scale,
                            shading = 'nearest', cmap=self.cmap, vmin=vmin, vmax=vmax)
 
-        self.addColorbar(im, ax)
+        if bax is not None:
+            print("Warning: currently broken axes for colorplots are not supported.")
 
-    def plotIrregularData3D(self, ax, irregularData3D):
+        self.addColorbar(im, cax)
+
+    def plotIrregularData3D(self, ax, irregularData3D, cax, bax):
         vmin, vmax = self.getZrange(irregularData3D)
         xlist = np.concatenate([np.repeat(irregularData3D.x[i], len(irregularData3D.ylist[i])) for i in range(len(irregularData3D.x))], axis=0)
         ylist = np.concatenate(irregularData3D.ylist, axis=0)
@@ -164,11 +162,14 @@ class ColorPlotter(Plotter):
                          grid_y / self.decorator.ylabel.scale,
                          grid_z / self.decorator.zlabel.scale, levels=levelsf, cmap=self.cmap,
                          extend='both')
-        self.addColorbar(im, ax, ticks=np.linspace(vmin, vmax, 6))
+        self.addColorbar(im, cax, ticks=np.linspace(vmin, vmax, 6))
         ax.contour(grid_x / self.decorator.xlabel.scale,
                    grid_y / self.decorator.ylabel.scale,
                    grid_z / self.decorator.zlabel.scale, linewidths=self.contourLinewidths, levels=levels,
                    colors='k', alpha=.4)
+
+        if bax is not None:
+            print("Warning: currently broken axes for colorplots are not supported.")
 
     def getZrange(self, data3D):
         if isinstance(data3D, RegularData3D):
@@ -189,24 +190,57 @@ class Scatter2D(Plotter):
     def __init__(self, decorator):
         super().__init__(decorator)
 
-    def plotDataCapsule(self, ax, dataCapsule):
+    def _plotData2DToAxis(self, ax, dataCapsule, color, toIm=True):
         label = dataCapsule.label
 
+        if toIm:
+            self.im = ax.scatter(dataCapsule.x / self.decorator.xlabel.scale,
+                                 dataCapsule.y / self.decorator.ylabel.scale,
+                                 s=self.markersize, color=color, label=self.labelText(label))
+        else:
+            ax.scatter(dataCapsule.x / self.decorator.xlabel.scale,
+                       dataCapsule.y / self.decorator.ylabel.scale,
+                       s=self.markersize, color=color, label=self.labelText(label))
+
+        if (self.decorator.connectDots is None) or (self.decorator.connectDots == True):
+            ax.plot(dataCapsule.x / self.decorator.xlabel.scale, dataCapsule.y / self.decorator.ylabel.scale,
+                    linewidth=self.linewidth, linestyle=self.linestyle, color=color)
+
+    def _plotSmoothFunction2DToAxis(self, ax, dataCapsule, toIm=True):
+        label = dataCapsule.label
+
+        x0, x1 = ax.get_xlim()
+        xax = np.linspace(x0, x1, dataCapsule.NPoints)
+        if toIm:
+            self.im = ax.plot(xax,
+                              dataCapsule.func(xax * self.decorator.xlabel.scale) / self.decorator.ylabel.scale,
+                              linewidth=self.linewidth, linestyle='--', label=self.labelText(label),
+                              color=self._fitcolor())
+        else:
+            ax.plot(xax,
+                    dataCapsule.func(xax * self.decorator.xlabel.scale) / self.decorator.ylabel.scale,
+                    linewidth=self.linewidth, linestyle='--', label=self.labelText(label),
+                    color=self._fitcolor())
+
+    def plotDataCapsule(self, ax, dataCapsule, cax=None, bax=None):
         if isinstance(dataCapsule, Data2D):
             color = self._linecolor()
-            self.im = ax.scatter(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale,
-                       s=self.markersize, color=color, label=self.labelText(label))
-            if (self.decorator.connectDots is None) or (self.decorator.connectDots == True):
-                ax.plot(dataCapsule.x/self.decorator.xlabel.scale, dataCapsule.y/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle=self.linestyle, color=color)
-        elif isinstance(dataCapsule, SmoothFunction2D):
-            x0, x1 = ax.get_xlim()
-            xax = np.linspace(x0, x1, dataCapsule.NPoints)
+            self._plotData2DToAxis(ax, dataCapsule, color, toIm=True)
+            if bax is not None:
+                self._plotData2DToAxis(bax, dataCapsule, color, toIm=False)
 
-            self.im = ax.plot(xax, dataCapsule.func(xax*self.decorator.xlabel.scale)/self.decorator.ylabel.scale, linewidth = self.linewidth, linestyle='--', label=self.labelText(label), color=self._fitcolor())
+
+        elif isinstance(dataCapsule, SmoothFunction2D):
+            self._plotSmoothFunction2DToAxis(ax, dataCapsule, toIm=True)
+            if bax is not None:
+                self._plotSmoothFunction2DToAxis(bax, dataCapsule, color, toIm=False)
         else:
             raise TypeError("Un-supported data capsule type for Scatter2D.")
 
-    def decorate(self, ax, bax=None, baxpad=None):
+        if cax is not None:
+            print("Warning: currently colorbars for scatterplots are not supported.")
+
+    def decorate(self, ax, cax=None, bax=None, baxpad=None):
         """Bax is the broken axis if using broken axes."""
         print("Foo!")
         super().decorate(ax)
@@ -242,6 +276,11 @@ class Scatter2D(Plotter):
         self.setTickSpacingOnAxis(ax3)
 
         if bax is not None:
+            # Pull xlabel from ax to bax:
+            xlabel = ax.get_xlabel()
+            ax.set_xlabel(None)
+            bax.set_xlabel(xlabel)
+
             bax2 = bax.secondary_yaxis('right')
             bax3 = bax.secondary_xaxis('top')
             bax2.tick_params(which='major', axis="y", direction="in")
@@ -252,25 +291,17 @@ class Scatter2D(Plotter):
             bax3.tick_params(labelleft=False, labelright=False, labeltop=False, labelbottom=False)
             bax3.minorticks_on()
 
-            ax.spines['top'].set_visible(False)
-            ax2.spines['top'].set_visible(False)
-            ax3.spines['top'].set_visible(False)
-            ax.tick_params(which='major', top=False, labeltop=False)
-            ax2.tick_params(which='major', top=False, labeltop=False)
-            ax3.tick_params(which='major', top=False, labeltop=False)
-            ax.tick_params(which='minor', top=False, labeltop=False)
-            ax2.tick_params(which='minor', top=False, labeltop=False)
-            ax3.tick_params(which='minor', top=False, labeltop=False)
+            ax.spines['bottom'].set_visible(False)
+            ax2.spines['bottom'].set_visible(False)
+            ax3.spines['bottom'].set_visible(False)
+            ax.tick_params(which='major', bottom=False, labelbottom=False)
+            ax.tick_params(which='minor', bottom=False, labelbottom=False)
 
-            bax.spines['bottom'].set_visible(False)
-            bax2.spines['bottom'].set_visible(False)
-            bax3.spines['bottom'].set_visible(False)
-            bax.tick_params(which='major', bottom=False, labelbottom=False)
-            bax2.tick_params(which='major', bottom=False, labelbottom=False)
-            bax3.tick_params(which='major', bottom=False, labelbottom=False)
-            bax.tick_params(which='minor', bottom=False, labelbottom=False)
-            bax2.tick_params(which='minor', bottom=False, labelbottom=False)
-            bax3.tick_params(which='minor', bottom=False, labelbottom=False)
+            bax.spines['top'].set_visible(False)
+            bax2.spines['top'].set_visible(False)
+            bax3.spines['top'].set_visible(False)
+            bax3.tick_params(which='major', top=False, labeltop=False)
+            bax3.tick_params(which='minor', top=False, labeltop=False)
 
             if self.decorator.majorTickSize is not None:
                 bax2.tick_params(which='major', width=self.decorator.majorTickSize[0],
@@ -302,8 +333,6 @@ class Scatter2D(Plotter):
             labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else 3.5
             baxpad = self.decorator.baxpad if self.decorator.baxpad is not None else .5 # Needs bugfix
             ax.yaxis.set_label_coords(-labelpady/width/72, 1.0 + .5*baxpad, transform=ax.transAxes) # 72: ppi for matplotlib
-
-        self.addColorbar(self.im, ax, toRemove=False)
 
         if self.decorator.semilogy is None or self.decorator.semilogy == False:
             ax2.minorticks_on()

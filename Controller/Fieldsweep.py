@@ -20,7 +20,7 @@ class Fieldsweep(Controller):
             self._dataModel = Synktek(paths, invertVoltage=invertVoltage)
 
     def plotLockinMagnitude(self, fieldAxisSweepType, overrideDecorator=None, plotID = None,
-                            insetID = None, overrideLabel=None):
+                            insetID = None, overrideLabel=None, sharex=None, sharey=None):
         plotType = PlotTypes.Scatter2D
         if fieldAxisSweepType == SweepTypes.B_X:
             baseDecorator = Decorators.Lockin_Magnitude_MagneticField_x.value
@@ -46,7 +46,8 @@ class Fieldsweep(Controller):
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:
-                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
             else:
                 self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
         else:
@@ -55,7 +56,7 @@ class Fieldsweep(Controller):
 
         return plotID
 
-    def plotSQI(self, fieldAxisSweepType, dVdI=False, deviceID=0, overrideDecorator=None):
+    def plotSQI(self, fieldAxisSweepType, dVdI=False, deviceID=0, overrideDecorator=None, sharex=None, sharey=None):
         if dVdI:
             plotType = PlotTypes.ColorPlot
             if fieldAxisSweepType == SweepTypes.B_X:
@@ -83,11 +84,13 @@ class Fieldsweep(Controller):
 
         if self._view == None:
             self.startPlot()
-        plotID = self._view.subplotFromDataCapsules([dataCapsule], plotType, decorator)
+        plotID = self._view.subplotFromDataCapsules([dataCapsule], plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
         return plotID
 
     def plotIC(self, fieldAxisSweepType, fromdVdI=False, vThreshold = None, dVdIThreshold = None, deviceID=0,
-               plotID = None, selection=None, sweepRange=None, overrideDecorator=None, positiveCurrents=True):
+               plotID = None, selection=None, sweepRange=None, overrideDecorator=None, positiveCurrents=True,
+               sharex=None, sharey=None):
         if fromdVdI:
             xIcDataCapsule = self._dataModel.ICFromIdVdI(fieldAxisSweepType, dVdIThreshold, deviceID = deviceID, selection=selection, sweepRange=sweepRange, positiveCurrent=positiveCurrents)
         else:
@@ -114,13 +117,14 @@ class Fieldsweep(Controller):
             self.startPlot()
 
         if plotID is None:
-            plotID = self._view.subplotFromDataCapsules([xIcDataCapsule], plotType, decorator)
+            plotID = self._view.subplotFromDataCapsules([xIcDataCapsule], plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
         else:
             self._view.addDatacapsuleToSubplot(xIcDataCapsule, plotID)
         return plotID
 
     def plotIVs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
-                selection=None, sweepRange=None):
+                selection=None, sweepRange=None, sharex=None, sharey=None):
         plotIDs = []
 
         baseDecorator = Decorators.Current_Voltage.value
@@ -141,7 +145,8 @@ class Fieldsweep(Controller):
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:
-                plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator)
+                plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
             else:
                 for dataCapsule in dataCapsules2D:
                     self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
@@ -152,7 +157,7 @@ class Fieldsweep(Controller):
         return plotID
 
     def plotIdVdIs(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
-                selection=None, sweepRange=None):
+                selection=None, sweepRange=None, sharex=None, sharey=None):
         plotIDs = []
 
         baseDecorator = Decorators.Current_DifferentialResistance.value
@@ -173,7 +178,8 @@ class Fieldsweep(Controller):
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:
-                plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator)
+                plotID = self._view.subplotFromDataCapsules(dataCapsules2D, plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
             else:
                 for dataCapsule in dataCapsules2D:
                     self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
@@ -183,7 +189,8 @@ class Fieldsweep(Controller):
 
         return plotID
 
-    def plotConstantBias(self, fieldAxisSweepType, ybias, deviceID=0, overrideDecorator=None, plotID = None, insetID = None, selection=None, sweepRange=None):
+    def plotConstantBias(self, fieldAxisSweepType, ybias, deviceID=0, overrideDecorator=None, plotID = None,
+                         insetID = None, selection=None, sweepRange=None, sharex=None, sharey=None):
         plotIDs = []
 
         dataCapsules = []
@@ -220,7 +227,8 @@ class Fieldsweep(Controller):
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:
-                plotID = self._view.subplotFromDataCapsules(dataCapsules, plotType, decorator)
+                plotID = self._view.subplotFromDataCapsules(dataCapsules, plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
             else:
                 for capsule in dataCapsules:
                     self._view.addDatacapsuleToSubplot(capsule, plotID)
@@ -229,7 +237,8 @@ class Fieldsweep(Controller):
             self._view.insetFromDataCapsules(dataCapsules, plotType, decorator, plotID, insetID)
         return plotID
 
-    def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None, selection=None, sweepRange=None, overrideLabel=None):
+    def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
+                       selection=None, sweepRange=None, overrideLabel=None, sharex=None, sharey=None):
         dataCapsule = self._dataModel.getResistance(fieldAxisSweepType, selection=selection, sweepRange=sweepRange)
         dataCapsule.label = overrideLabel if overrideLabel is not None else dataCapsule.label
 
@@ -256,7 +265,8 @@ class Fieldsweep(Controller):
         if insetID is None:
             # Make a top-level plot:
             if plotID is None:
-                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator)
+                plotID = self._view.subplotFromDataCapsules(dataCapsule, plotType, decorator, sharex=sharex,
+                                                            sharey=sharey)
             else:
                 self._view.addDatacapsuleToSubplot(dataCapsule, plotID)
         else:
