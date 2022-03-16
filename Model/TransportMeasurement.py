@@ -102,7 +102,10 @@ class TransportMeasurement(ABC):
             z = zz[:,i][mask[:,i]]
 
             if negyonly:
-                Ic[i] = (I[::-1])[np.argmax(z[::-1] > zThreshold)]
+                if zThreshold > 0:
+                    Ic[i] = (I[::-1])[np.argmax(z[::-1] > zThreshold)]
+                else:
+                    Ic[i] = (I[::-1])[np.argmax(z[::-1] < zThreshold)]
             else:
                 Ic[i] = I[np.argmax(z > zThreshold)]  # I[np.argmin(np.abs(z - zThreshold))]
 
@@ -127,7 +130,10 @@ class TransportMeasurement(ABC):
 
             z = z[mask]
             if negyonly:
-                Ic[i] = ((I[mask])[::-1])[np.argmax(z[::-1] > zThreshold)]
+                if zThreshold > 0:
+                    Ic[i] = ((I[mask])[::-1])[np.argmax(z[::-1] > zThreshold)]
+                else:
+                    Ic[i] = ((I[mask])[::-1])[np.argmax(z[::-1] < zThreshold)]
             else:
                 Ic[i] = I[mask][np.argmax(z > zThreshold)]
 

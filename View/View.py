@@ -1,6 +1,7 @@
 from View.Plotter import Plotter, ColorPlotter, Scatter2D
 from enum import Enum, auto
 from typing import NamedTuple
+import Module.Defaults as Defaults
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -16,8 +17,8 @@ class PlotTypes(Enum):
 
 class View():
     preferredAmountOfColumns = 1
-    preferredFigureSize = (7, 4)
-    preferredDpi = 240
+    preferredFigureSize = (8.25, 4)
+    preferredDpi = 600
     preferredBaxpad = .5
 
     def __init__(self, useTex=False):
@@ -59,7 +60,7 @@ class View():
                 self.addDatacapsuleToInset(dataCapsule, plotID, insetID)
         else:
             # Then add to a Subplot instance based on the plotType.
-            subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator)
+            subplot = self._subplotFromPlotType(dataCapsules, plotType, decorator, None, None)
             self._insets[plotID].append(subplot)
 
     def makeAxes(self):
@@ -164,10 +165,10 @@ class View():
             for inset in insets:
                 plotter = inset.plotter
 
-                loc = plotter.decorator.insetPositon if plotter.decorator.insetPositon is not None else 'lower right'
-                width = plotter.decorator.insetWidth if plotter.decorator.insetWidth is not None else 2.5
-                height = plotter.decorator.insetHeight if plotter.decorator.insetHeight is not None else 1
-                borderpad = plotter.decorator.insetBorderPad if plotter.decorator.insetBorderPad is not None else 5
+                loc = plotter.decorator.insetPositon if plotter.decorator.insetPositon is not None else Defaults.insetPosition
+                width = plotter.decorator.insetWidth if plotter.decorator.insetWidth is not None else Defaults.insetWidth
+                height = plotter.decorator.insetHeight if plotter.decorator.insetHeight is not None else Defaults.insetHeight
+                borderpad = plotter.decorator.insetBorderPad if plotter.decorator.insetBorderPad is not None else Defaults.insetBorderPad
 
                 if isinstance(loc, str) or isinstance(loc, int):
                     inset_ax = inset_axes(parentAx, width=width, height=height, loc=loc,

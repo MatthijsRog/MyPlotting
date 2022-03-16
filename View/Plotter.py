@@ -10,6 +10,8 @@ from DataCapsule.DataCapsules import RegularData3D, IrregularData3D, Data2D, Smo
 
 from scipy.interpolate import griddata
 
+import Module.Defaults as Defaults
+
 class Plotter(ABC):
     roundDecimals = 2
     _defaultFitcolors = ['red', 'green']
@@ -17,11 +19,11 @@ class Plotter(ABC):
 
     def __init__(self, decorator):
         self.decorator = decorator
-        self.markersize = decorator.markersize if decorator.markersize is not None else 5
-        self.linewidth = decorator.linewidth if decorator.linewidth is not None else 2
-        self.linestyle = decorator.linestyle if decorator.linestyle is not None else '-'
-        self.linecolors = self.decorator.linecolors if self.decorator.linecolors is not None else self._defaultLinecolors
-        self.fitcolors = self.decorator.fitcolors if self.decorator.fitcolors is not None else self._defaultFitcolors
+        self.markersize = decorator.markersize if decorator.markersize is not None else Defaults.markersize
+        self.linewidth = decorator.linewidth if decorator.linewidth is not None else Defaults.linewidth
+        self.linestyle = decorator.linestyle if decorator.linestyle is not None else Defaults.linestyle
+        self.linecolors = self.decorator.linecolors if self.decorator.linecolors is not None else Defaults.lineColors
+        self.fitcolors = self.decorator.fitcolors if self.decorator.fitcolors is not None else Defaults.fitColors
         self.linecolorindex = 0
         self.fitcolorindex = 0
         pass
@@ -48,10 +50,9 @@ class Plotter(ABC):
         pass
 
     def decorate(self, ax, cax=None, bax=None, secondaryAxis=False):
-        print("Bar!")
-        labelpadx = self.decorator.labelPad[0] if self.decorator.labelPad is not None else 5
-        labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else 3.5
-        labelpadz = self.decorator.labelPadZ if self.decorator.labelPadZ is not None else 20
+        labelpadx = self.decorator.labelPad[0] if self.decorator.labelPad is not None else Defaults.labelPadX
+        labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else Defaults.labelPadY
+        labelpadz = self.decorator.labelPadZ if self.decorator.labelPadZ is not None else Defaults.labelPadZ
 
         if not secondaryAxis:
             if plt.rcParams['text.usetex']:
@@ -76,22 +77,25 @@ class Plotter(ABC):
         if self.decorator.ylim is not None and self.decorator.brokenYLim is None:
             ax.set_ylim(self.decorator.ylim)
         if self.decorator.brokenYLim is not None:
-            print("Snoot")
             if not secondaryAxis:
                 ax.set_ylim(self.decorator.brokenYLim[1])
             else:
-                print(self.decorator.brokenYLim[1])
                 ax.set_ylim(self.decorator.brokenYLim[0])
         if self.decorator.minorticksOn is None or self.decorator.minorticksOn == True:
-            print("Turning on minor ticks.")
             ax.minorticks_on()
 
         if self.decorator.majorTickSize is not None:
             ax.tick_params(which='major', width=self.decorator.majorTickSize[0], length=self.decorator.majorTickSize[1])
             for axis in ['top', 'bottom', 'left', 'right']:
                 ax.spines[axis].set_linewidth(self.decorator.majorTickSize[0])  # change width
+        else:
+            ax.tick_params(which='major', width=Defaults.majorTickSize[0], length=Defaults.majorTickSize[1])
+            for axis in ['top', 'bottom', 'left', 'right']:
+                ax.spines[axis].set_linewidth(Defaults.majorTickSize[0])  # change width
         if self.decorator.minorTickSize is not None:
             ax.tick_params(which='minor', width=self.decorator.minorTickSize[0], length=self.decorator.minorTickSize[1])
+        else:
+            ax.tick_params(which='minor', width=Defaults.minorTickSize[0], length=Defaults.minorTickSize[1])
 
         self.setTickSpacingOnAxis(ax)
 
@@ -119,10 +123,10 @@ class Plotter(ABC):
 class ColorPlotter(Plotter):
     def __init__(self, decorator):
         super().__init__(decorator)
-        self.cmap = self.decorator.cmap if self.decorator.cmap is not None else 'turbo'
-        self.contourFillLevels = self.decorator.contourFillLevels if self.decorator.contourFillLevels is not None else 40
-        self.contourLevels = self.decorator.contourLevels if self.decorator.contourLevels is not None else 6
-        self.contourLinewidths = .4 # Magic number
+        self.cmap = self.decorator.cmap if self.decorator.cmap is not None else Defaults.cmap
+        self.contourFillLevels = self.decorator.contourFillLevels if self.decorator.contourFillLevels is not None else Defaults.contourFillLevels
+        self.contourLevels = self.decorator.contourLevels if self.decorator.contourLevels is not None else Defaults.contourLevels
+        self.contourLinewidths = Defaults.contourLinewidths # Magic number
 
     def plotDataCapsule(self, ax, dataCapsule, cax=None, bax=None):
         if isinstance(dataCapsule, RegularData3D):
@@ -134,42 +138,74 @@ class ColorPlotter(Plotter):
 
     def plotRegularData3D(self, ax, regularData3D, cax, bax):
         vmin, vmax = self.getZrange(regularData3D)
+
+        """
         im = ax.pcolormesh(regularData3D.xx / self.decorator.xlabel.scale,
                            regularData3D.yy / self.decorator.ylabel.scale,
-                           regularData3D.zz / self.decorator.title.scale,
+                           regularData3D.zz / self.decorator.zlabel.scale,
                            shading = 'nearest', cmap=self.cmap, vmin=vmin, vmax=vmax)
+        """
+
+        xdata = regularData3D.xx.flatten()
+        ydata = regularData3D.yy.flatten()
+        zdata = regularData3D.zz.flatten()
+        self._countourPlot(xdata, ydata, zdata, vmin, vmax, ax, cax)
 
         if bax is not None:
             print("Warning: currently broken axes for colorplots are not supported.")
 
-        self.addColorbar(im, cax)
-
     def plotIrregularData3D(self, ax, irregularData3D, cax, bax):
         vmin, vmax = self.getZrange(irregularData3D)
-        xlist = np.concatenate([np.repeat(irregularData3D.x[i], len(irregularData3D.ylist[i])) for i in range(len(irregularData3D.x))], axis=0)
+        xlist = np.concatenate(
+            [np.repeat(irregularData3D.x[i], len(irregularData3D.ylist[i])) for i in range(len(irregularData3D.x))],
+            axis=0)
         ylist = np.concatenate(irregularData3D.ylist, axis=0)
         zlist = np.concatenate(irregularData3D.zlist, axis=0)
-
-        xax = np.linspace(np.min(xlist), np.max(xlist), 100)
-        yax = np.linspace(np.min(ylist), np.max(ylist), 100)
-        grid_x, grid_y = np.meshgrid(xax, yax)
-        grid_z = griddata((xlist, ylist), zlist, (grid_x, grid_y), method='cubic')
-
-        levelsf = np.linspace(vmin, vmax, self.contourFillLevels+2, endpoint=False)[1:]
-        levels = np.linspace(vmin, vmax, self.contourLevels+2, endpoint=False)[1:]
-
-        im = ax.contourf(grid_x / self.decorator.xlabel.scale,
-                         grid_y / self.decorator.ylabel.scale,
-                         grid_z / self.decorator.zlabel.scale, levels=levelsf, cmap=self.cmap,
+        self._countourPlot(xlist, ylist, zlist, vmin, vmax, ax, cax)
+        """
+        im = ax.tricontourf(grid_x.flatten() / self.decorator.xlabel.scale,
+                         grid_y.flatten() / self.decorator.ylabel.scale,
+                         grid_z.flatten() / self.decorator.zlabel.scale, levels=levelsf, cmap=self.cmap,
                          extend='both')
         self.addColorbar(im, cax, ticks=np.linspace(vmin, vmax, 6))
         ax.contour(grid_x / self.decorator.xlabel.scale,
                    grid_y / self.decorator.ylabel.scale,
                    grid_z / self.decorator.zlabel.scale, linewidths=self.contourLinewidths, levels=levels,
                    colors='k', alpha=.4)
-
+        """
         if bax is not None:
             print("Warning: currently broken axes for colorplots are not supported.")
+
+    def _countourPlot(self, xlist, ylist, zlist, vmin, vmax, ax, cax):
+        xax = np.linspace(np.min(xlist) + 1e-12, np.max(xlist) - 1e-12, 600)
+        yax = np.linspace(np.min(ylist) + 1e-12, np.max(ylist) - 1e-12, 600)
+        grid_x, grid_y = np.meshgrid(xax, yax)
+        grid_z = griddata((xlist, ylist), zlist, (grid_x, grid_y), method='linear')
+
+        levelsf = np.linspace(vmin, vmax, self.contourFillLevels + 2, endpoint=False)[1:]
+        levels = np.linspace(vmin, vmax, self.contourLevels + 2, endpoint=False)[1:]
+
+        im = ax.contourf(grid_x / self.decorator.xlabel.scale,
+                         grid_y / self.decorator.ylabel.scale,
+                         grid_z / self.decorator.zlabel.scale, levels=levelsf, cmap=self.cmap,
+                         extend='both')
+
+        for c in im.collections:
+            c.set_edgecolor("face")
+
+        tickspacing = self.decorator.tickspacingz if self.decorator.tickspacingz is not None else (vmax - vmin) / (
+                    Defaults.amountOfZTicks - 1)
+        self.addColorbar(im, cax, ticks=np.arange(vmin, vmax + tickspacing, tickspacing))
+
+        xax = np.linspace(np.min(xlist) + 1e-12, np.max(xlist) - 1e-12, 600)
+        yax = np.linspace(np.min(ylist) + 1e-12, np.max(ylist) - 1e-12, 600)
+        grid_x, grid_y = np.meshgrid(xax, yax)
+        grid_z = griddata((xlist, ylist), zlist, (grid_x, grid_y), method='linear')
+
+        ax.contour(grid_x / self.decorator.xlabel.scale,
+                   grid_y / self.decorator.ylabel.scale,
+                   grid_z / self.decorator.zlabel.scale, linewidths=self.contourLinewidths, levels=levels,
+                   colors='k', alpha=.4)
 
     def getZrange(self, data3D):
         if isinstance(data3D, RegularData3D):
@@ -242,14 +278,15 @@ class Scatter2D(Plotter):
 
     def decorate(self, ax, cax=None, bax=None, baxpad=None):
         """Bax is the broken axis if using broken axes."""
-        print("Foo!")
         super().decorate(ax)
         if bax is not None:
-            print("Super decorating bax.")
             super().decorate(bax, secondaryAxis=True)
 
         if self.decorator.legendOn is None or self.decorator.legendOn == True:
-            ax.legend(loc='upper left', bbox_to_anchor=[1.05,1])
+            if self.decorator.legendOutsideBox is None or self.decorator.legendOutsideBox == True:
+                ax.legend(loc='upper left', bbox_to_anchor=[1.05,1])
+            else:
+                ax.legend(loc='upper right')
         if self.decorator.gridOn is None or self.decorator.gridOn == True:
             ax.grid()
             if bax is not None:
@@ -268,9 +305,15 @@ class Scatter2D(Plotter):
         if self.decorator.majorTickSize is not None:
             ax2.tick_params(which='major', width=self.decorator.majorTickSize[0], length=self.decorator.majorTickSize[1])
             ax3.tick_params(which='major', width=self.decorator.majorTickSize[0], length=self.decorator.majorTickSize[1])
+        else:
+            ax2.tick_params(which='major', width=Defaults.majorTickSize[0], length=Defaults.majorTickSize[1])
+            ax3.tick_params(which='major', width=Defaults.majorTickSize[0], length=Defaults.majorTickSize[1])
         if self.decorator.minorTickSize is not None:
             ax2.tick_params(which='minor', width=self.decorator.minorTickSize[0], length=self.decorator.minorTickSize[1])
             ax3.tick_params(which='minor', width=self.decorator.minorTickSize[0], length=self.decorator.minorTickSize[1])
+        else:
+            ax2.tick_params(which='minor', width=Defaults.minorTickSize[0], length=Defaults.minorTickSize[1])
+            ax3.tick_params(which='minor', width=Defaults.minorTickSize[0], length=Defaults.minorTickSize[1])
 
         self.setTickSpacingOnAxis(ax2)
         self.setTickSpacingOnAxis(ax3)
@@ -308,21 +351,27 @@ class Scatter2D(Plotter):
                                 length=self.decorator.majorTickSize[1])
                 bax3.tick_params(which='major', width=self.decorator.majorTickSize[0],
                                 length=self.decorator.majorTickSize[1])
+            else:
+                bax2.tick_params(which='major', width=Defaults.majorTickSize[0], length=Defaults.majorTickSize[1])
+                bax3.tick_params(which='major', width=Defaults.majorTickSize[0], length=Defaults.majorTickSize[1])
             if self.decorator.minorTickSize is not None:
                 bax2.tick_params(which='minor', width=self.decorator.minorTickSize[0],
                                 length=self.decorator.minorTickSize[1])
                 bax3.tick_params(which='minor', width=self.decorator.minorTickSize[0],
                                 length=self.decorator.minorTickSize[1])
+            else:
+                bax2.tick_params(which='minor', width=Defaults.minorTickSize[0], length=Defaults.minorTickSize[1])
+                bax3.tick_params(which='minor', width=Defaults.minorTickSize[0], length=Defaults.minorTickSize[1])
 
             # Mesh together the plots:
             d = .02
-            kwargs = dict(transform=bax.transAxes, color='k', clip_on=False, linewidth=.8)
-            bax.plot((-d, d), (-4 * d, 4 * d), **kwargs)  # top-left diagonal
-            bax.plot((1 - d, 1 + d), (-4 * d, 4 * d), **kwargs)  # top-right diagonal
+            kwargs = dict(transform=ax.transAxes, color='k', clip_on=False, linewidth=.8)
+            ax.plot((-d, d), (-4 * d, 4 * d), **kwargs)  # top-left diagonal
+            ax.plot((1 - d, 1 + d), (-4 * d, 4 * d), **kwargs)  # top-right diagonal
 
-            kwargs.update(transform=ax.transAxes)  # switch to the bottom axes
-            ax.plot((-d, +d), (1 - 4 * d, 1 + 4 * d), **kwargs)  # bottom-left diagonal
-            ax.plot((1 - d, 1 + d), (1 - 4 * d, 1 + 4 * d), **kwargs)  # bottom-right diagonal
+            kwargs.update(transform=bax.transAxes)  # switch to the bottom axes
+            bax.plot((-d, +d), (1 - 4 * d, 1 + 4 * d), **kwargs)  # bottom-left diagonal
+            bax.plot((1 - d, 1 + d), (1 - 4 * d, 1 + 4 * d), **kwargs)  # bottom-right diagonal
 
             self.setTickSpacingOnAxis(bax2)
             self.setTickSpacingOnAxis(bax3)
@@ -330,9 +379,9 @@ class Scatter2D(Plotter):
             # Set the ylabel to the correct position:
             bbox = ax.get_window_extent().transformed(plt.gcf().dpi_scale_trans.inverted())
             width, height = bbox.width, bbox.height
-            labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else 3.5
-            baxpad = self.decorator.baxpad if self.decorator.baxpad is not None else .5 # Needs bugfix
-            ax.yaxis.set_label_coords(-labelpady/width/72, 1.0 + .5*baxpad, transform=ax.transAxes) # 72: ppi for matplotlib
+            labelpady = self.decorator.labelPad[1] if self.decorator.labelPad is not None else Defaults.labelPadY
+            baxpad = self.decorator.baxpad if self.decorator.baxpad is not None else Defaults.baxpad # Needs bugfix
+            ax.yaxis.set_label_coords(-labelpady/width/72, -.5*baxpad, transform=ax.transAxes) # 72: ppi for matplotlib
 
         if self.decorator.semilogy is None or self.decorator.semilogy == False:
             ax2.minorticks_on()

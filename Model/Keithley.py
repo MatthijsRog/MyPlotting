@@ -7,8 +7,11 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 class Keithley(VectorMagnetModel, TransportMeasurement):
-    def __init__(self, paths):
+    def __init__(self, paths, invertVoltage=False):
+        self.invertVoltage = invertVoltage
+
         super().__init__(paths)
+
 
     def loadDataFromFile(self, path):
         VTITemperature, sampleTemperature, Bx, By, Bz = self.vectorMagnetTemperatureAndField(path)
@@ -23,8 +26,11 @@ class Keithley(VectorMagnetModel, TransportMeasurement):
 
             ivPerDevice = []
             for deviceID in range(len(currentPerDevice)):
-                iv = KeithleyIV(current = currentPerDevice[deviceID][start:end],
-                                voltage = voltagePerDevice[deviceID][start:end])
+                curr, vol = currentPerDevice[deviceID][start:end], voltagePerDevice[deviceID][start:end]
+                if self.invertVoltage:
+                    vol *= -1
+                iv = KeithleyIV(current = curr,
+                                voltage = vol)
                 ivPerDevice.append(iv)
             self._data.append(KeithleyData(VTITemperature[start],
                                       sampleTemperature[start],

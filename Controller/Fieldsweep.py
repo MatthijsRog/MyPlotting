@@ -13,7 +13,7 @@ class Fieldsweep(Controller):
     def __init__(self, deviceType, paths, invertVoltage=False):
         super().__init__()
         if deviceType == DeviceTypes.Keithley:
-            self._dataModel = Keithley(paths)
+            self._dataModel = Keithley(paths, invertVoltage=invertVoltage)
         elif deviceType == DeviceTypes.ZILockin:
             self._dataModel = ZILockin(paths)
         elif deviceType == DeviceTypes.Synktek:
@@ -65,6 +65,8 @@ class Fieldsweep(Controller):
                 baseDecorator = Decorators.SQI_dVdI_y.value
             if fieldAxisSweepType == SweepTypes.B_Z:
                 baseDecorator = Decorators.SQI_dVdI_z.value
+            if fieldAxisSweepType == SweepTypes.T_SAMPLE:
+                baseDecorator = Decorators.Fieldsweep_Temperature_dVdI.value
             dataCapsule = self._dataModel.sweepIdVdI(fieldAxisSweepType, deviceID=deviceID)
         else:
             plotType = PlotTypes.ColorPlot
@@ -74,6 +76,8 @@ class Fieldsweep(Controller):
                 baseDecorator = Decorators.SQI_IV_y.value
             if fieldAxisSweepType == SweepTypes.B_Z:
                 baseDecorator = Decorators.SQI_IV_z.value
+            if fieldAxisSweepType == SweepTypes.T_SAMPLE:
+                baseDecorator = Decorators.Fieldsweep_Temperature_IV.value
             dataCapsule = self._dataModel.sweepIV(fieldAxisSweepType, deviceID=deviceID)
 
         if overrideDecorator is None:
@@ -239,7 +243,7 @@ class Fieldsweep(Controller):
 
     def plotResistance(self, fieldAxisSweepType, deviceID=0, overrideDecorator=None, plotID = None, insetID = None,
                        selection=None, sweepRange=None, overrideLabel=None, sharex=None, sharey=None):
-        dataCapsule = self._dataModel.getResistance(fieldAxisSweepType, selection=selection, sweepRange=sweepRange)
+        dataCapsule = self._dataModel.getResistance(fieldAxisSweepType, deviceID=deviceID, selection=selection, sweepRange=sweepRange)
         dataCapsule.label = overrideLabel if overrideLabel is not None else dataCapsule.label
 
         if fieldAxisSweepType == SweepTypes.B_X:

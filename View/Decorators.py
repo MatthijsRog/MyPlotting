@@ -5,10 +5,11 @@ from enum import Enum
 class Decorator(object):
     def __init__(self, xlabel=None, ylabel=None, zlabel=None, title=None, xlim=None, ylim=None, zlim=None, markersize=None,
                  linestyle=None, linewidth=None, linecolors=None, fitcolors=None, cmap=None, connectDots=None,
-                 insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None, legendOn=None, gridOn=None,
-                 minorticksOn = None, brokenYLim = None, baxpad=None,
+                 insetPosition=None, insetWidth=None, insetHeight=None, insetBorderPad=None,
+                 legendOn=None, legendOutsideBox=None,
+                 gridOn=None, minorticksOn = None, brokenYLim = None, baxpad=None,
                  labelPad = None, labelPadZ = None, contourFillLevels = None, contourLevels = None,
-                 semilogy = None, tickspacing = None, majorTickSize = None, minorTickSize = None):
+                 semilogy = None, tickspacing = None, tickspacingz = None, majorTickSize = None, minorTickSize = None):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.zlabel = zlabel
@@ -28,6 +29,7 @@ class Decorator(object):
         self.insetHeight = insetHeight
         self.insetBorderPad = insetBorderPad
         self.legendOn = legendOn
+        self.legendOutsideBox = legendOutsideBox
         self.gridOn = gridOn
         self.minorticksOn = minorticksOn
         self.brokenYLim = brokenYLim
@@ -38,6 +40,7 @@ class Decorator(object):
         self.contourLevels = contourLevels
         self.semilogy = semilogy
         self.tickspacing = tickspacing # 2-element list
+        self.tickspacingz = tickspacingz
         self.majorTickSize = majorTickSize  # 2-element list
         self.minorTickSize = minorTickSize  # 2-element list
 
@@ -80,6 +83,8 @@ class Decorator(object):
             self.insetBorderPad = override.insetBorderPad
         if override.legendOn is not None:
             self.legendOn = override.legendOn
+        if override.legendOutsideBox is not None:
+            self.legendOutsideBox = override.legendOutsideBox
         if override.gridOn is not None:
             self.gridOn = override.gridOn
         if override.minorticksOn is not None:
@@ -100,6 +105,8 @@ class Decorator(object):
             self.semilogy = semilogy
         if override.tickspacing is not None:
             self.tickspacing = tickspacing
+        if override.tickspacingz is not None:
+            self.tickspacingz = tickspacingz
         if override.majorTickSize is not None:
             self.majorTickSize = majorTickSize
         if override.minorTickSize is not None:
@@ -130,6 +137,13 @@ class Decorators(Enum):
     SQI_dVdI_z = Decorator(xlabel=SILabel(PlotUnits.InPlaneAppliedMagneticField_z, PlotScales.Milli),
                            ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
                            zlabel=SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+    Fieldsweep_Temperature_IV = Decorator(xlabel=SILabel(PlotUnits.Temperature, PlotScales.Unit),
+                                          ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                                          zlabel=SILabel(PlotUnits.Voltage, PlotScales.Micro))
+    Fieldsweep_Temperature_dVdI = Decorator(xlabel=SILabel(PlotUnits.Temperature, PlotScales.Unit),
+                                          ylabel=SILabel(PlotUnits.Current, PlotScales.Micro),
+                                          zlabel = SILabel(PlotUnits.DifferentialResistance, PlotScales.Unit))
+
     Ic_T = Decorator(xlabel = SILabel(PlotUnits.Temperature, PlotScales.Unit),
                      ylabel = SILabel(PlotUnits.CriticalCurrent, PlotScales.Micro))
     Ic_MagneticField = Decorator(xlabel = SILabel(PlotUnits.InPlaneAppliedMagneticField, PlotScales.Milli),

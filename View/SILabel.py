@@ -76,6 +76,8 @@ class SILabel():
 
     def generateTextLabel(self):
         if self._label == None:
-            return self._unit.unit + r" (" + self.generateTextSymbol() + r")"
+            textLabel = self._unit.unit + r" (" + self.generateTextSymbol() + r")"
         else:
-            return self._label + r" (" + self.generateTextSymbol() + r")"
+            textLabel = self._label + r" (" + self.generateTextSymbol() + r")"
+        sanitized = textLabel.replace(r"\text", r"")
+        return sanitized
